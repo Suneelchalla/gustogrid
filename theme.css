@@ -1,0 +1,321 @@
+/* ============================================================
+   GustoGrid — Shared Theme & Base Styles
+   ============================================================ */
+
+:root {
+  --bg: #0A0A0B;
+  --surface: #141416;
+  --surface-2: #1C1C1F;
+  --surface-3: #242428;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --text: #F5F5F7;
+  --text-2: #9A9AA0;
+  --text-3: #5A5A5F;
+  --orange: #FF6B35;
+  --amber: #FFC233;
+  --mint: #3DDC97;
+  --crimson: #FF3D5A;
+  --violet: #B97BFF;
+  --cyan: #4DD4FF;
+  --pink: #FF6FB5;
+
+  /* Safe areas (iOS notch / Android cutout) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(255, 107, 53, 0.06), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255, 61, 90, 0.04), transparent 60%),
+    #050506;
+  background-attachment: fixed;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+.serif {
+  font-family: 'Fraunces', serif;
+  font-variation-settings: 'opsz' 144;
+  letter-spacing: -0.02em;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ============================================================
+   APP CONTAINER — replaces the phone frame from preview
+   ============================================================ */
+
+#root {
+  position: relative;
+  z-index: 2;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--bg);
+  position: relative;
+  isolation: isolate;
+  padding-bottom: calc(100px + var(--safe-bottom));
+}
+
+/* On desktop, show subtle frame to suggest mobile-first design */
+@media (min-width: 600px) {
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, transparent 8%, transparent 92%, rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-container {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 40px 80px -20px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================================
+   LOADING SKELETON — shown until React mounts
+   ============================================================ */
+
+.app-loading {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  z-index: 9999;
+  transition: opacity 0.4s ease;
+}
+
+.app-loading.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-loading-mark {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #FF6B35 0%, #FFC233 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px -8px rgba(255, 107, 53, 0.6);
+  animation: mark-pulse 2s ease-in-out infinite;
+}
+
+@keyframes mark-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 32px -8px rgba(255, 107, 53, 0.6); }
+  50% { transform: scale(1.05); box-shadow: 0 8px 40px -4px rgba(255, 107, 53, 0.8); }
+}
+
+.app-loading-text {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.app-loading-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   STATUS BAR — only on mobile-installed PWA
+   ============================================================ */
+
+.safe-top {
+  height: var(--safe-top);
+  background: var(--bg);
+}
+
+/* ============================================================
+   BOTTOM TAB BAR
+   ============================================================ */
+
+.tabbar {
+  position: fixed;
+  bottom: calc(14px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 452px;
+  height: 70px;
+  background: rgba(20, 20, 22, 0.85);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 18px;
+  z-index: 100;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  text-decoration: none;
+}
+
+.tab {
+  width: 56px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tab svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+  color: var(--text-2);
+  transition: color 0.2s;
+}
+
+.tab .tab-lbl {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+
+.tab.active svg { color: var(--orange); }
+.tab.active .tab-lbl { color: var(--orange); }
+.tab.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 8px var(--orange);
+}
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text);
+}
+
+/* Scroll behavior */
+::-webkit-scrollbar { width: 0; height: 0; }
+* { scrollbar-width: none; }
+
+/* Tap feedback */
+button, .tappable {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Disable text selection on UI chrome */
+.app-container { user-select: none; -webkit-user-select: none; }
+.app-container p, .app-container input, .app-container textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Animation utilities */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pulse-light {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.pulse-light {
+  animation: pulse-light 2s ease-in-out infinite;
+}
