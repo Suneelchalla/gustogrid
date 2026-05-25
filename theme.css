@@ -117,10 +117,13 @@ body::before {
 }
 
 /* ============================================================
-   LOADING SKELETON — shown only if React mount > 150ms
-   (Previously shown immediately on every navigation, made every
-    page tap feel like opening a new app. Now invisible 95% of
-    the time because React mounts in under 150ms.)
+   LOADING SKELETON (v2.3 — SCROLL FIX)
+   The loader is purely visual: pointer-events stays 'none' at all
+   times so it can never block scroll/clicks even if the fade-out
+   JS fails to run. Previously the keyframe animated pointer-events
+   to 'auto' under 'forwards' fill-mode, and on some browsers
+   killing the animation later didn't reliably undo that — leaving
+   an invisible click-blocker covering the entire viewport.
    ============================================================ */
 
 .app-loading {
@@ -134,19 +137,19 @@ body::before {
   gap: 24px;
   z-index: 9999;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   animation: loader-appear 0.4s 0.15s forwards;
 }
 
 @keyframes loader-appear {
-  to { opacity: 1; pointer-events: auto; }
+  to { opacity: 1; }
 }
 
 .app-loading.fade-out {
   opacity: 0 !important;
-  animation: none;
+  pointer-events: none !important;
   transition: opacity 0.25s ease;
-  pointer-events: none;
+  animation: none;
 }
 
 .app-loading-mark {
