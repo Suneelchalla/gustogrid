@@ -764,6 +764,9 @@
 
 <div id="root"></div>
 
+<!-- Recipe data layer (must load before React script) -->
+<script src="./data/recipes.js"></script>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -815,20 +818,77 @@ const HeroDeco = () => (
 );
 
 // === Data ===
-const CATEGORY = {
-  name: 'Non-Vegetarian',
-  display: ['Non-', 'Vegetarian'],
-  tagline: 'Poultry, seafood, and red meat — globally inspired',
-  count: 42, avgTime: 38, avgCost: 310,
+// Per-category metadata. Subcats are dynamically counted from actual recipes.
+const CATEGORIES = {
+  non: {
+    name: 'Non-Vegetarian', display: ['Non-', 'Vegetarian'],
+    tagline: 'Poultry, seafood, and red meat — globally inspired',
+    accentColor: 'var(--crimson)',
+    heroGradient: 'linear-gradient(160deg, #4D1F26 0%, #8A2A35 40%, #FF3D5A 100%)',
+    titleEmHex: '#FFD4DA',
+    subcatOrder: ['poultry', 'seafood', 'meat', 'starters'],
+    subcatLabels: { poultry: 'Poultry', seafood: 'Seafood', meat: 'Meat', starters: 'Starters' },
+  },
+  veg: {
+    name: 'Vegetarian', display: ['Veg', 'etarian'],
+    tagline: 'Indian and global vegetarian dishes',
+    accentColor: 'var(--mint)',
+    heroGradient: 'linear-gradient(160deg, #1F4D2E 0%, #2A7A4E 40%, #3DDC97 100%)',
+    titleEmHex: '#B8F0D4',
+    subcatOrder: ['Mains', 'Curries', 'Starters', 'Rice', 'Breads', 'Sides'],
+    subcatLabels: null,
+  },
+  con: {
+    name: 'Continental', display: ['Conti', 'nental'],
+    tagline: 'European classics — pastas, pizzas, mains',
+    accentColor: 'var(--amber)',
+    heroGradient: 'linear-gradient(160deg, #4D3D1F 0%, #8A6A2A 40%, #E8A53D 100%)',
+    titleEmHex: '#FFE4A8',
+    subcatOrder: ['Pasta', 'Pizza', 'Mains', 'Salads', 'Soups', 'Sides'],
+    subcatLabels: null,
+  },
+  chi: {
+    name: 'Chinese', display: ['Chin', 'ese'],
+    tagline: 'Noodles, gravies, dim sum — Indo-Chinese fusion',
+    accentColor: 'var(--orange)',
+    heroGradient: 'linear-gradient(160deg, #4D1F1F 0%, #8A3A1F 40%, #FF6B35 100%)',
+    titleEmHex: '#FFD4B8',
+    subcatOrder: ['Noodles', 'Rice', 'Gravies', 'Starters', 'Soups', 'Dim Sum'],
+    subcatLabels: null,
+  },
+  des: {
+    name: 'Desserts', display: ['Des', 'serts'],
+    tagline: 'Cakes, Indian sweets, frozen treats, pastries',
+    accentColor: 'var(--pink)',
+    heroGradient: 'linear-gradient(160deg, #3D1F4D 0%, #8A4A8C 40%, #FF6FB5 100%)',
+    titleEmHex: '#FFD4E8',
+    subcatOrder: ['Indian Sweets', 'Cakes', 'Frozen', 'Pastries', 'Puddings'],
+    subcatLabels: null,
+  },
+  sna: {
+    name: 'Snacks', display: ['Sn', 'acks'],
+    tagline: 'Street food, quick bites, sandwiches, wraps',
+    accentColor: 'var(--amber)',
+    heroGradient: 'linear-gradient(160deg, #4D421F 0%, #8A7A2A 40%, #FFC233 100%)',
+    titleEmHex: '#FFE89A',
+    subcatOrder: ['Street Food', 'Fried', 'Sandwiches', 'Wraps', 'Bites'],
+    subcatLabels: null,
+  },
+  dri: {
+    name: 'Drinks', display: ['Dr', 'inks'],
+    tagline: 'Juices, mocktails, shakes, hot drinks',
+    accentColor: 'var(--cyan)',
+    heroGradient: 'linear-gradient(160deg, #1F3D4D 0%, #2A6A8C 40%, #4DD4FF 100%)',
+    titleEmHex: '#B8E8FF',
+    subcatOrder: ['Shakes', 'Smoothies', 'Juices', 'Coolers', 'Mocktails', 'Hot Drinks'],
+    subcatLabels: null,
+  },
 };
 
-const SUBCATS = [
-  { key: 'all', label: 'All', count: 42 },
-  { key: 'poultry', label: 'Poultry', count: 16 },
-  { key: 'seafood', label: 'Seafood', count: 12 },
-  { key: 'meat', label: 'Meat', count: 10 },
-  { key: 'starters', label: 'Starters', count: 4 },
-];
+// Read ?cat= from URL
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const ACTIVE_CAT = URL_PARAMS.get('cat') || 'non';
+const CATEGORY = CATEGORIES[ACTIVE_CAT] || CATEGORIES.non;
 
 const SORT_OPTS = [
   { key: 'popular', label: 'Popular' },
@@ -838,26 +898,80 @@ const SORT_OPTS = [
   { key: 'match', label: 'Best match', requiresFridge: true },
 ];
 
-const RECIPES = [
-  { id: 'butter-chicken', name: 'Butter Chicken', sub: 'Creamy, smoky, restaurant-style', subcat: 'poultry', time: 45, cost: 420, difficulty: 'Medium', cal: 480, emoji: '🍛', thumb: 't-pou-1', match: 92, featured: true, popular: 98 },
-  { id: 'tandoori', name: 'Tandoori Chicken', sub: 'Yogurt-marinated, char-grilled', subcat: 'poultry', time: 60, cost: 380, difficulty: 'Medium', cal: 410, emoji: '🍗', thumb: 't-pou-2', match: 85, popular: 92 },
-  { id: 'tikka-masala', name: 'Chicken Tikka Masala', sub: 'Tomato-cream gravy, charred bites', subcat: 'poultry', time: 50, cost: 390, difficulty: 'Medium', cal: 520, emoji: '🥘', thumb: 't-pou-3', match: 88, popular: 95 },
-  { id: 'honey-wings', name: 'Honey Garlic Wings', sub: 'Sticky, glossy, finger-licking', subcat: 'poultry', time: 30, cost: 260, difficulty: 'Easy', cal: 380, emoji: '🍗', thumb: 't-pou-4', match: 70, popular: 88 },
-  { id: 'coq-vin', name: 'Coq au Vin', sub: 'French chicken braised in red wine', subcat: 'poultry', time: 90, cost: 540, difficulty: 'Hard', cal: 580, emoji: '🍷', thumb: 't-pou-5', match: 45, popular: 72 },
-  { id: 'lemon-pepper', name: 'Lemon Pepper Chicken', sub: 'Zesty pan-fried thighs', subcat: 'poultry', time: 25, cost: 220, difficulty: 'Easy', cal: 340, emoji: '🍋', thumb: 't-pou-6', match: 78, popular: 80 },
-  { id: 'garlic-prawns', name: 'Garlic Butter Prawns', sub: 'Pan-seared, parsley-flecked', subcat: 'seafood', time: 20, cost: 480, difficulty: 'Easy', cal: 320, emoji: '🦐', thumb: 't-sea-1', match: 65, popular: 86 },
-  { id: 'pan-salmon', name: 'Pan-Seared Salmon', sub: 'Crispy skin, lemon-dill butter', subcat: 'seafood', time: 25, cost: 620, difficulty: 'Medium', cal: 420, emoji: '🐟', thumb: 't-sea-2', match: 55, popular: 90 },
-  { id: 'goan-fish', name: 'Goan Fish Curry', sub: 'Coconut-tamarind, kingfish', subcat: 'seafood', time: 40, cost: 460, difficulty: 'Medium', cal: 380, emoji: '🐠', thumb: 't-sea-3', match: 68, popular: 84 },
-  { id: 'shrimp-padthai', name: 'Shrimp Pad Thai', sub: 'Wok-tossed rice noodles, tamarind', subcat: 'seafood', time: 30, cost: 380, difficulty: 'Medium', cal: 510, emoji: '🍜', thumb: 't-sea-4', match: 52, popular: 89 },
-  { id: 'tuna-tartare', name: 'Tuna Tartare', sub: 'Sushi-grade, avocado, soy-lime', subcat: 'seafood', time: 15, cost: 720, difficulty: 'Hard', cal: 290, emoji: '🍣', thumb: 't-sea-5', match: 30, popular: 68 },
-  { id: 'wellington', name: 'Beef Wellington', sub: 'Tenderloin, mushroom duxelles, puff pastry', subcat: 'meat', time: 150, cost: 1200, difficulty: 'Hard', cal: 720, emoji: '🥩', thumb: 't-mea-1', match: 22, popular: 75 },
-  { id: 'rogan-josh', name: 'Lamb Rogan Josh', sub: 'Kashmiri spices, slow-braised lamb', subcat: 'meat', time: 120, cost: 680, difficulty: 'Medium', cal: 590, emoji: '🍖', thumb: 't-mea-2', match: 58, popular: 87 },
-  { id: 'pork-bao', name: 'Pork Belly Bao', sub: 'Pillowy buns, glazed five-spice belly', subcat: 'meat', time: 80, cost: 520, difficulty: 'Hard', cal: 480, emoji: '🥟', thumb: 't-mea-3', match: 38, popular: 79 },
-  { id: 'bourguignon', name: 'Beef Bourguignon', sub: 'Burgundy-stewed, pearl onions', subcat: 'meat', time: 180, cost: 780, difficulty: 'Hard', cal: 640, emoji: '🍲', thumb: 't-mea-4', match: 40, popular: 78 },
-  { id: 'lamb-shank', name: 'Slow Lamb Shank', sub: 'Fall-off-the-bone, rosemary jus', subcat: 'meat', time: 240, cost: 720, difficulty: 'Medium', cal: 610, emoji: '🍖', thumb: 't-mea-5', match: 50, popular: 82 },
-  { id: 'chicken-65', name: 'Chicken 65', sub: 'Curry leaf, fiery red, crispy', subcat: 'starters', time: 35, cost: 280, difficulty: 'Medium', cal: 360, emoji: '🌶️', thumb: 't-sta-1', match: 75, popular: 91 },
-  { id: 'fish-fingers', name: 'Crispy Fish Fingers', sub: 'Panko-crusted, tartare dip', subcat: 'starters', time: 25, cost: 240, difficulty: 'Easy', cal: 310, emoji: '🐟', thumb: 't-sta-2', match: 60, popular: 76 },
+// Hand-tuned popularity/match for the 18 legacy Non-Veg recipes
+const LEGACY_META = {
+  'butter-chicken':  { match: 92, popular: 98, featured: true, subcat: 'poultry' },
+  'tandoori':        { match: 85, popular: 92, subcat: 'poultry' },
+  'tikka-masala':    { match: 88, popular: 95, subcat: 'poultry' },
+  'honey-wings':     { match: 70, popular: 88, subcat: 'poultry' },
+  'coq-vin':         { match: 45, popular: 72, subcat: 'poultry' },
+  'lemon-pepper':    { match: 78, popular: 80, subcat: 'poultry' },
+  'garlic-prawns':   { match: 65, popular: 86, subcat: 'seafood' },
+  'pan-salmon':      { match: 55, popular: 90, subcat: 'seafood' },
+  'goan-fish':       { match: 68, popular: 84, subcat: 'seafood' },
+  'shrimp-padthai':  { match: 52, popular: 89, subcat: 'seafood' },
+  'tuna-tartare':    { match: 30, popular: 68, subcat: 'seafood' },
+  'wellington':      { match: 22, popular: 75, subcat: 'meat' },
+  'rogan-josh':      { match: 58, popular: 87, subcat: 'meat' },
+  'pork-bao':        { match: 38, popular: 79, subcat: 'meat' },
+  'bourguignon':     { match: 40, popular: 78, subcat: 'meat' },
+  'lamb-shank':      { match: 50, popular: 82, subcat: 'meat' },
+  'chicken-65':      { match: 75, popular: 91, subcat: 'starters' },
+  'fish-fingers':    { match: 60, popular: 76, subcat: 'starters' },
+};
+
+// Deterministic pseudo-random from id (for stub popularity/match)
+const hashId = (id) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = ((h << 5) - h) + id.charCodeAt(i) | 0;
+  return Math.abs(h);
+};
+
+// Pull recipes for active category from data layer, normalize shape
+const RECIPES = (window.GG_GET_BY_CATEGORY ? window.GG_GET_BY_CATEGORY(ACTIVE_CAT) : []).map(r => {
+  const legacy = LEGACY_META[r.id];
+  const cost = r.ingredients && r.ingredients.length
+    ? Math.round(r.ingredients.reduce((s, i) => s + i.price, 0))
+    : (r.baseCost || 0);
+  const h = hashId(r.id);
+  return {
+    id: r.id,
+    name: r.title,
+    sub: r.sub,
+    subcat: (legacy && legacy.subcat) || r.subcat || 'starters',
+    time: r.totalMin,
+    cost,
+    cal: (r.nutrition && r.nutrition.calories) || 0,
+    difficulty: r.difficulty,
+    emoji: r.emoji,
+    heroGradient: r.heroGradient,
+    match: (legacy && legacy.match) != null ? legacy.match : 30 + (h % 60),
+    popular: (legacy && legacy.popular) != null ? legacy.popular : 50 + (h % 45),
+    featured: (legacy && legacy.featured) || false,
+    isStub: r.isStub || false,
+  };
+});
+
+// Build SUBCATS dynamically by counting actual recipes
+const SUBCAT_COUNTS = { all: RECIPES.length };
+RECIPES.forEach(r => { SUBCAT_COUNTS[r.subcat] = (SUBCAT_COUNTS[r.subcat] || 0) + 1; });
+const SUBCATS = [
+  { key: 'all', label: 'All', count: SUBCAT_COUNTS.all },
+  ...CATEGORY.subcatOrder
+    .filter(k => SUBCAT_COUNTS[k])
+    .map(k => ({
+      key: k,
+      label: (CATEGORY.subcatLabels && CATEGORY.subcatLabels[k]) || k,
+      count: SUBCAT_COUNTS[k],
+    })),
 ];
+
+// Category-level avg stats (computed dynamically)
+const AVG_TIME = RECIPES.length ? Math.round(RECIPES.reduce((s, r) => s + r.time, 0) / RECIPES.length) : 0;
+const AVG_COST = RECIPES.length ? Math.round(RECIPES.reduce((s, r) => s + r.cost, 0) / RECIPES.length) : 0;
+CATEGORY.count = RECIPES.length;
+CATEGORY.avgTime = AVG_TIME;
+CATEGORY.avgCost = AVG_COST;
 
 const formatTime = (min) => {
   if (min < 60) return `${min}m`;
@@ -878,7 +992,7 @@ const ListCard = ({ r, fridgeMode, saved, onToggleSave }) => {
   const highMatch = fridgeMode && r.match >= 80;
   return (
     <a className={`list-card ${highMatch ? 'high-match' : ''}`} href={`./recipe.html?id=${r.id}`}>
-      <div className={`lc-thumb ${r.thumb}`}>
+      <div className="lc-thumb" style={{background: r.heroGradient}}>
         <span className="em">{r.emoji}</span>
       </div>
       <div className="lc-body">
@@ -902,7 +1016,7 @@ const ListCard = ({ r, fridgeMode, saved, onToggleSave }) => {
 
 const GridCard = ({ r, fridgeMode, saved, onToggleSave }) => (
   <a className="grid-card" href={`./recipe.html?id=${r.id}`}>
-    <div className={`gc-img ${r.thumb}`}>
+    <div className="gc-img" style={{background: r.heroGradient}}>
       <span className="gc-em">{r.emoji}</span>
       {fridgeMode && (<div className={`gc-match ${r.match < 80 ? 'mid' : ''}`}>{r.match}%</div>)}
     </div>
@@ -921,7 +1035,7 @@ const GridCard = ({ r, fridgeMode, saved, onToggleSave }) => (
 
 const FeaturedCard = ({ r, fridgeMode, saved }) => (
   <a className="featured" href={`./recipe.html?id=${r.id}`}>
-    <div className="featured-img">
+    <div className="featured-img" style={{background: r.heroGradient}}>
       <div className="featured-eyebrow">
         <Icon name="star" width="9" height="9" style={{color: 'var(--amber)', fill: 'currentColor'}}/> Tonight's pick
       </div>
@@ -1003,15 +1117,15 @@ const CategoryScreen = () => {
 
   return (
     <div className="app-container fade-up">
-      <div className="cat-hero">
+      <div className="cat-hero" style={{background: CATEGORY.heroGradient}}>
         <div className="hero-deco"><HeroDeco/></div>
         <div className="hero-nav">
           <a className="hero-btn" href="./index.html"><Icon name="chevLeft"/></a>
           <div className="hero-btn"><Icon name="search"/></div>
         </div>
         <div className="hero-content">
-          <div className="hero-eyebrow"><span className="dot"/>Category · 02 / 08</div>
-          <h1 className="hero-title">{CATEGORY.display[0]}<em>{CATEGORY.display[1]}</em></h1>
+          <div className="hero-eyebrow"><span className="dot" style={{background: CATEGORY.titleEmHex, boxShadow: `0 0 8px ${CATEGORY.titleEmHex}`}}/>Category</div>
+          <h1 className="hero-title">{CATEGORY.display[0]}<em style={{color: CATEGORY.titleEmHex}}>{CATEGORY.display[1]}</em></h1>
           <p className="hero-tag">{CATEGORY.tagline}</p>
         </div>
         <div className="hero-fade"/>
@@ -1126,6 +1240,8 @@ const CategoryScreen = () => {
         <a className="tab active" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
         <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
         <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+        <a className="tab" href="./creations.html"><Icon name="book"/><span className="tab-lbl">Create</span></a>
+        <a className="tab" href="./profile.html"><Icon name="user"/><span className="tab-lbl">Profile</span></a>
       </nav>
     </div>
   );
