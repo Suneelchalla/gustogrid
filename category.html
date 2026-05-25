@@ -820,6 +820,15 @@ const HeroDeco = () => (
 // === Data ===
 // Per-category metadata. Subcats are dynamically counted from actual recipes.
 const CATEGORIES = {
+  bre: {
+    name: 'Breakfast', display: ['Break', 'fast'],
+    tagline: 'Eggs, bowls, pancakes — start the day right',
+    accentColor: 'var(--amber)',
+    heroGradient: 'linear-gradient(160deg, #6B4D1F 0%, #C2861F 40%, #FFAA3D 100%)',
+    titleEmHex: '#FFE0A8',
+    subcatOrder: ['Eggs', 'Indian Breakfast', 'Pancakes & Waffles', 'Bowls & Cereals', 'Toasts', 'Western Plates'],
+    subcatLabels: null,
+  },
   non: {
     name: 'Non-Vegetarian', display: ['Non-', 'Vegetarian'],
     tagline: 'Poultry, seafood, and red meat — globally inspired',
