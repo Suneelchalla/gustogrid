@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Saved — GustoGrid</title>
+<meta name="description" content="Your bookmarked recipes, ready to cook again.">
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#FF6B35">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GustoGrid">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="./theme.css">
+
+<style>
+  .s-head {
+    padding: 24px 24px 12px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .s-head .left .eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .s-head .left .dot {
+    width: 6px; height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--amber);
+  }
+  .s-head .left .small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .s-head h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--text);
+    margin: 0;
+  }
+  .s-head h1 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #FFC233, #FF6B35);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .s-head .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+  }
+  .s-head .count .n { color: var(--amber); font-weight: 600; }
+
+  .s-sub {
+    padding: 0 24px;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+    margin: 0 0 20px;
+  }
+
+  /* List of saved recipes */
+  .s-list {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .s-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s;
+    position: relative;
+  }
+  .s-card:active { transform: scale(0.98); }
+  .s-card:hover { border-color: var(--border-2); }
+
+  .s-thumb {
+    width: 64px; height: 64px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .s-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(0,0,0,0.2), transparent 50%);
+  }
+  .s-thumb .em {
+    font-size: 32px;
+    line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+    z-index: 1;
+  }
+
+  .s-body { flex: 1; min-width: 0; }
+  .s-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 3px;
+    letter-spacing: -0.01em;
+  }
+  .s-sub-text {
+    font-size: 11px;
+    color: var(--text-2);
+    margin: 0 0 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .s-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .s-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    font-size: 10px;
+    color: var(--text-2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .s-meta-pill.cost { color: var(--orange); }
+  .s-meta-pill.diff-Easy { color: var(--mint); }
+  .s-meta-pill.diff-Medium { color: var(--amber); }
+  .s-meta-pill.diff-Hard { color: var(--crimson); }
+  .s-meta-pill.stub { background: rgba(255,194,51,0.1); border: 1px solid rgba(255,194,51,0.3); color: var(--amber); }
+
+  .s-unsave {
+    width: 32px; height: 32px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .s-unsave:hover { background: rgba(255, 61, 90, 0.15); }
+  .s-unsave svg { width: 14px; height: 14px; color: var(--amber); fill: var(--amber); transition: color 0.2s; }
+  .s-unsave:hover svg { color: var(--crimson); fill: var(--crimson); }
+
+  /* Empty state */
+  .empty {
+    padding: 60px 32px 40px;
+    text-align: center;
+  }
+  .empty-icon {
+    width: 80px; height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(255,194,51,0.1), rgba(255,107,53,0.05));
+    border: 1px solid rgba(255,194,51,0.2);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .empty-icon svg { width: 36px; height: 36px; color: var(--amber); }
+  .empty h2 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .empty p {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.55;
+    margin: 0 0 24px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    border-radius: 14px;
+    color: #1a0d05;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    font-family: 'Geist', sans-serif;
+    box-shadow: 0 8px 20px -8px rgba(255,107,53,0.5);
+  }
+  .empty-cta svg { width: 14px; height: 14px; }
+
+  .empty-tips {
+    margin-top: 32px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    text-align: left;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .empty-tips h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .empty-tips p {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+    margin: 0;
+    max-width: none;
+    text-align: left;
+  }
+  .empty-tips p strong { color: var(--text); font-weight: 500; }
+</style>
+</head>
+
+<body>
+
+<div id="app-loading" class="app-loading">
+  <div class="app-loading-mark">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none">
+      <path d="M4 6h11M4 12h7M4 18h11" stroke="#1a0d05" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 4 L22 4 L20 13 L20 20 Q20 21 19 21 Q18 21 18 20 L18 13 Z" fill="#1a0d05"/>
+    </svg>
+  </div>
+  <div class="app-loading-text">GustoGrid</div>
+  <div class="app-loading-sub">Loading saved…</div>
+</div>
+
+<div id="root"></div>
+
+<script src="./data/recipes.js"></script>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+const Icon = ({ name, ...props }) => {
+  const paths = {
+    bookmark: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></>,
+    bookmarkFilled: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/></>,
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    fridge: <><path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 10h14"/><path d="M15 7v6"/><path d="M9 7v6"/></>,
+    arrowRight: <><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>,
+    clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    flame: <><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></>,
+  };
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {paths[name]}
+    </svg>
+  );
+};
+
+// Per-recipe thumbnail gradient (matches category.html palette)
+const thumbGradient = (recipe) => {
+  // Pick gradient based on subcat / type heuristics
+  if (recipe.cuisine && recipe.cuisine.includes('Indian')) {
+    return 'linear-gradient(135deg, #4D1F26, #FF6B35)';
+  }
+  if (recipe.cuisine && recipe.cuisine.includes('Continental')) {
+    return 'linear-gradient(135deg, #1F3D4D, #FF6B35)';
+  }
+  if (recipe.cuisine && (recipe.cuisine.includes('Mediterranean') || recipe.cuisine.includes('Japanese'))) {
+    return 'linear-gradient(135deg, #1F4D3D, #3DDC97)';
+  }
+  if (recipe.cuisine && (recipe.cuisine.includes('Chinese') || recipe.cuisine.includes('Thai'))) {
+    return 'linear-gradient(135deg, #4D421F, #E8A53D)';
+  }
+  if (recipe.cuisine && recipe.cuisine.includes('French')) {
+    return 'linear-gradient(135deg, #2D1A1A, #8C2A35)';
+  }
+  if (recipe.cuisine && recipe.cuisine.includes('British')) {
+    return 'linear-gradient(135deg, #5C2818, #E8A53D)';
+  }
+  return 'linear-gradient(135deg, #4D1F26, #FF6B35)';
+};
+
+// Compute cost from ingredients OR fallback to baseCost
+const recipeCost = (r) => {
+  if (r.ingredients && r.ingredients.length) {
+    return Math.round(r.ingredients.reduce((s, i) => s + i.price, 0));
+  }
+  return r.baseCost || 0;
+};
+
+const loadSaved = () => {
+  try {
+    const raw = localStorage.getItem('gg-bookmarks');
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+};
+
+const SavedScreen = () => {
+  const [savedIds, setSavedIds] = useState(() => loadSaved());
+
+  // Look up each saved ID against the recipe data
+  const savedRecipes = useMemo(() => (
+    [...savedIds]
+      .map(id => window.GG_RECIPES && window.GG_RECIPES[id])
+      .filter(Boolean)
+  ), [savedIds]);
+
+  const unsave = (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = new Set(savedIds);
+    next.delete(id);
+    try { localStorage.setItem('gg-bookmarks', JSON.stringify([...next])); } catch {}
+    setSavedIds(next);
+  };
+
+  return (
+    <div className="app-container fade-up">
+      <div className="safe-top"/>
+
+      <div className="s-head">
+        <div className="left">
+          <div className="eyebrow-row">
+            <span className="dot"></span>
+            <span className="small">Your collection</span>
+          </div>
+          <h1>Saved <em>recipes</em></h1>
+        </div>
+        {savedRecipes.length > 0 && (
+          <div className="count">
+            <span className="n">{savedRecipes.length}</span> saved
+          </div>
+        )}
+      </div>
+
+      {savedRecipes.length > 0 && (
+        <p className="s-sub">Tap any recipe to open. The bookmark icon removes it from your collection.</p>
+      )}
+
+      {savedRecipes.length === 0 ? (
+        <div className="empty">
+          <div className="empty-icon"><Icon name="bookmark"/></div>
+          <h2>Nothing saved yet</h2>
+          <p>
+            Tap the bookmark icon on any recipe to save it here for quick access. Your collection works offline too.
+          </p>
+          <a className="empty-cta" href="./category.html?cat=non">
+            Browse recipes <Icon name="arrowRight"/>
+          </a>
+
+          <div className="empty-tips">
+            <h4>How to save</h4>
+            <p>
+              Open a recipe → tap the <strong>bookmark icon</strong> in the top-right of the hero. It glows amber when saved. They'll appear here automatically.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="s-list">
+          {savedRecipes.map(r => (
+            <a key={r.id} className="s-card" href={`./recipe.html?id=${r.id}`}>
+              <div className="s-thumb" style={{background: thumbGradient(r)}}>
+                <span className="em">{r.emoji}</span>
+              </div>
+              <div className="s-body">
+                <h4 className="s-title">{r.title}</h4>
+                <p className="s-sub-text">{r.sub}</p>
+                <div className="s-meta">
+                  <div className="s-meta-pill"><Icon name="clock"/>{r.totalMin}m</div>
+                  <div className="s-meta-pill cost">₹{recipeCost(r)}</div>
+                  <div className={`s-meta-pill diff-${r.difficulty}`}><Icon name="flame"/>{r.difficulty}</div>
+                  {r.isStub && <div className="s-meta-pill stub">⚠ Stub</div>}
+                </div>
+              </div>
+              <button className="s-unsave" onClick={(e) => unsave(r.id, e)} aria-label="Unsave">
+                <Icon name="bookmarkFilled"/>
+              </button>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <nav className="tabbar">
+        <a className="tab" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
+        <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
+        <a className="tab active" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+      </nav>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<SavedScreen/>);
+
+requestAnimationFrame(() => {
+  const loader = document.getElementById('app-loading');
+  if (loader) {
+    loader.classList.add('fade-out');
+    setTimeout(() => loader.remove(), 300);
+  }
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('[SW] failed:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
