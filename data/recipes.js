@@ -331,6 +331,216 @@
       ],
     },
 
+    // -------------------------------------------------------
+    // 7. PALAK PANEER (Vegetarian flagship)
+    // -------------------------------------------------------
+    'palak-paneer': {
+      id: 'palak-paneer',
+      title: 'Palak Paneer',
+      sub: 'Cottage cheese in creamed spinach',
+      cuisine: 'Indian · Vegetarian',
+      emoji: '🥬',
+      category: 'veg',
+      subcat: 'Curries',
+      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #3DDC97 0%, #1F7A4E 35%, #0F3D26 75%, #0A0A0B 100%)',
+      baseServings: 4,
+      totalMin: 40,
+      difficulty: 'Medium',
+      youtube: yt('palak paneer'),
+      nutrition: { calories: 340, protein: 18, carbs: 14, fats: 24, fiber: 4 },
+      ingredients: [
+        { id: 1, name: 'Spinach (fresh)', qty: 400, unit: 'g', price: 60, cat: 'Produce', emoji: '🥬' },
+        { id: 2, name: 'Paneer (cubed)', qty: 250, unit: 'g', price: 140, cat: 'Dairy', emoji: '🧀' },
+        { id: 3, name: 'Onion (chopped)', qty: 1, unit: '', price: 8, cat: 'Produce', emoji: '🧅' },
+        { id: 4, name: 'Tomato (chopped)', qty: 2, unit: '', price: 14, cat: 'Produce', emoji: '🍅' },
+        { id: 5, name: 'Ginger-garlic paste', qty: 1, unit: 'tbsp', price: 8, cat: 'Produce', emoji: '🧄' },
+        { id: 6, name: 'Green chili', qty: 2, unit: '', price: 4, cat: 'Produce', emoji: '🌶️' },
+        { id: 7, name: 'Heavy cream', qty: 50, unit: 'ml', price: 35, cat: 'Dairy', emoji: '🥛' },
+        { id: 8, name: 'Butter', qty: 30, unit: 'g', price: 22, cat: 'Dairy', emoji: '🧈' },
+        { id: 9, name: 'Cumin seeds', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌿' },
+        { id: 10, name: 'Garam masala', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
+        { id: 11, name: 'Kasuri methi', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
+        { id: 12, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
+      ],
+      steps: [
+        { n: 1, title: 'Blanch the spinach', secs: 300, heat: 'high',
+          ings: [{ e: '🥬', n: 'Spinach', q: '400g' }],
+          desc: 'Bring a large pot of water to a rolling boil. Drop spinach in for exactly 90 seconds — no more, or it turns army-green. Drain and shock immediately in ice water to keep the vivid green.' },
+        { n: 2, title: 'Blend smooth', secs: 120, heat: 'off',
+          ings: [{ e: '🌶️', n: 'Green chili', q: '2' }],
+          desc: 'Squeeze excess water from spinach. Blend with green chilies and a splash of water into a smooth, bright-green puree. Set aside.' },
+        { n: 3, title: 'Sear the paneer', secs: 180, heat: 'high',
+          ings: [{ e: '🧀', n: 'Paneer', q: '250g' }, { e: '🧈', n: 'Butter', q: '15g' }],
+          desc: 'Heat half the butter in a heavy pan on high. Add paneer cubes; sear undisturbed 90 sec per side until golden edges form. Transfer to a bowl of warm salted water — keeps them soft.' },
+        { n: 4, title: 'Bloom aromatics', secs: 240, heat: 'medium',
+          ings: [{ e: '🧈', n: 'Butter', q: '15g' }, { e: '🌿', n: 'Cumin seeds' }, { e: '🧅', n: 'Onion' }, { e: '🧄', n: 'Ginger-garlic paste' }],
+          desc: 'Same pan, lower heat. Melt remaining butter. Crackle cumin seeds 20 sec, then add onions. Cook 3 min until soft and translucent. Stir in ginger-garlic paste, cook 30 sec until raw smell goes.' },
+        { n: 5, title: 'Add tomatoes', secs: 300, heat: 'medium',
+          ings: [{ e: '🍅', n: 'Tomato', q: '2' }, { e: '🌿', n: 'Garam masala' }],
+          desc: 'Add chopped tomatoes and garam masala. Cook 5 min, mashing as you go, until tomatoes collapse into a thick paste and oil starts to separate at the edges.' },
+        { n: 6, title: 'Add the spinach', secs: 360, heat: 'low',
+          ings: [{ e: '🥬', n: 'Spinach puree' }],
+          desc: 'Lower flame. Pour in spinach puree. Stir gently — never boil, or the color dulls. Simmer 6 min, stirring occasionally. Taste, salt as needed.' },
+        { n: 7, title: 'Cream and paneer', secs: 240, heat: 'low',
+          ings: [{ e: '🥛', n: 'Cream', q: '50ml' }, { e: '🧀', n: 'Paneer (drained)' }],
+          desc: 'Drain paneer, slide into the gravy. Stir in cream. Cook 4 min on low — paneer should warm through but stay soft. Don\'t over-stir or you\'ll break the cubes.' },
+        { n: 8, title: 'Finish and rest', secs: 60, heat: 'off',
+          ings: [{ e: '🌿', n: 'Kasuri methi' }, { e: '🍋', n: 'Lemon' }],
+          desc: 'Off heat. Crush kasuri methi between palms over the pan. Squeeze a wedge of lemon. Rest covered 1 minute. Serve hot with naan or jeera rice.' },
+      ],
+    },
+
+    // -------------------------------------------------------
+    // 8. SPAGHETTI CARBONARA (Continental flagship)
+    // -------------------------------------------------------
+    'spaghetti-carbonara': {
+      id: 'spaghetti-carbonara',
+      title: 'Spaghetti Carbonara',
+      sub: 'Egg, pancetta, pecorino, pepper',
+      cuisine: 'Italian · Continental',
+      emoji: '🍝',
+      category: 'con',
+      subcat: 'Pasta',
+      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #B26F1F 40%, #4D3D1F 75%, #0A0A0B 100%)',
+      baseServings: 4,
+      totalMin: 25,
+      difficulty: 'Medium',
+      youtube: yt('authentic spaghetti carbonara'),
+      nutrition: { calories: 540, protein: 22, carbs: 58, fats: 22, fiber: 3 },
+      ingredients: [
+        { id: 1, name: 'Spaghetti', qty: 400, unit: 'g', price: 120, cat: 'Pantry', emoji: '🍝' },
+        { id: 2, name: 'Pancetta (or bacon)', qty: 150, unit: 'g', price: 180, cat: 'Protein', emoji: '🥓' },
+        { id: 3, name: 'Egg yolks (large)', qty: 4, unit: '', price: 40, cat: 'Protein', emoji: '🥚' },
+        { id: 4, name: 'Whole egg', qty: 1, unit: '', price: 10, cat: 'Protein', emoji: '🥚' },
+        { id: 5, name: 'Pecorino Romano', qty: 80, unit: 'g', price: 220, cat: 'Dairy', emoji: '🧀' },
+        { id: 6, name: 'Parmigiano-Reggiano', qty: 30, unit: 'g', price: 80, cat: 'Dairy', emoji: '🧀' },
+        { id: 7, name: 'Black peppercorns', qty: 2, unit: 'tsp', price: 12, cat: 'Spice', emoji: '⚫' },
+        { id: 8, name: 'Garlic clove (optional)', qty: 1, unit: '', price: 2, cat: 'Produce', emoji: '🧄' },
+        { id: 9, name: 'Salt (for pasta water)', qty: 2, unit: 'tbsp', price: 4, cat: 'Spice', emoji: '🧂' },
+      ],
+      steps: [
+        { n: 1, title: 'Boil pasta water', secs: 480, heat: 'high',
+          ings: [{ e: '🧂', n: 'Salt', q: '2 tbsp' }],
+          desc: 'Fill a large pot with 4L water. Bring to a rolling boil — takes about 8 min. Salt aggressively — water should taste like sea water. This is your only chance to season the pasta itself.' },
+        { n: 2, title: 'Render the pancetta', secs: 360, heat: 'medium',
+          ings: [{ e: '🥓', n: 'Pancetta', q: '150g' }, { e: '🧄', n: 'Garlic (optional)' }],
+          desc: 'Dice pancetta into 1cm cubes. Cold pan, medium heat. Cook 5-6 min, stirring occasionally, until the fat renders and edges crisp. If using garlic, smash and add for last minute, then discard.' },
+        { n: 3, title: 'Whisk the egg base', secs: 120, heat: 'off',
+          ings: [{ e: '🥚', n: 'Egg yolks + 1 whole egg' }, { e: '🧀', n: 'Pecorino + Parmigiano' }, { e: '⚫', n: 'Black pepper' }],
+          desc: 'In a wide bowl, whisk egg yolks, whole egg, finely grated cheeses, and freshly cracked black pepper until thick and glossy. Critical: do this BEFORE the pasta finishes — it must be ready.' },
+        { n: 4, title: 'Cook the spaghetti', secs: 540, heat: 'high',
+          ings: [{ e: '🍝', n: 'Spaghetti', q: '400g' }],
+          desc: 'Add spaghetti to the boiling salted water. Cook 1 min less than the package says — finish in the pan. Reserve a full cup of starchy pasta water before draining. Don\'t rinse.' },
+        { n: 5, title: 'Combine in pan', secs: 120, heat: 'low',
+          ings: [{ e: '🍝', n: 'Drained spaghetti' }],
+          desc: 'Lower the pancetta pan to LOW heat. Add drained spaghetti, toss for 30 seconds to coat in the rendered fat. Add a splash of pasta water — it should sizzle softly, not violently.' },
+        { n: 6, title: 'Off-heat emulsify', secs: 90, heat: 'off',
+          ings: [{ e: '🥚', n: 'Egg + cheese mixture' }],
+          desc: 'OFF THE HEAT — this is non-negotiable, or you\'ll have scrambled eggs. Pour egg mixture over pasta, tossing constantly with tongs. Add pasta water 1 tbsp at a time until silky. Should coat each strand glossily.' },
+        { n: 7, title: 'Plate and finish', secs: 60, heat: 'off',
+          ings: [{ e: '🧀', n: 'Extra Pecorino' }, { e: '⚫', n: 'More pepper' }],
+          desc: 'Plate immediately into warm bowls. Top with extra grated Pecorino and a generous crack of black pepper. Eat right away — carbonara waits for no one.' },
+      ],
+    },
+
+    // -------------------------------------------------------
+    // 10. MASALA OMELETTE (Breakfast flagship)
+    // -------------------------------------------------------
+    'masala-omelette': {
+      id: 'masala-omelette',
+      title: 'Masala Omelette',
+      sub: 'Indian-spiced fluffy folded eggs',
+      cuisine: 'Indian · Breakfast',
+      emoji: '🍳',
+      category: 'bre',
+      subcat: 'Eggs',
+      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFAA3D 0%, #E8A53D 35%, #6B4D1F 75%, #0A0A0B 100%)',
+      baseServings: 2,
+      totalMin: 12,
+      difficulty: 'Easy',
+      youtube: yt('masala omelette indian'),
+      nutrition: { calories: 320, protein: 18, carbs: 6, fats: 24, fiber: 2 },
+      ingredients: [
+        { id: 1, name: 'Eggs (large)', qty: 4, unit: '', price: 32, cat: 'Protein', emoji: '🥚' },
+        { id: 2, name: 'Onion (finely chopped)', qty: 1, unit: 'small', price: 8, cat: 'Produce', emoji: '🧅' },
+        { id: 3, name: 'Tomato (deseeded, chopped)', qty: 1, unit: 'small', price: 8, cat: 'Produce', emoji: '🍅' },
+        { id: 4, name: 'Green chili (minced)', qty: 1, unit: '', price: 2, cat: 'Produce', emoji: '🌶️' },
+        { id: 5, name: 'Coriander leaves', qty: 2, unit: 'tbsp', price: 5, cat: 'Produce', emoji: '🌿' },
+        { id: 6, name: 'Ginger (grated)', qty: 0.5, unit: 'tsp', price: 3, cat: 'Produce', emoji: '🫚' },
+        { id: 7, name: 'Butter (or ghee)', qty: 1, unit: 'tbsp', price: 12, cat: 'Dairy', emoji: '🧈' },
+        { id: 8, name: 'Turmeric powder', qty: 0.25, unit: 'tsp', price: 3, cat: 'Spice', emoji: '🟡' },
+        { id: 9, name: 'Red chili powder', qty: 0.5, unit: 'tsp', price: 4, cat: 'Spice', emoji: '🌶️' },
+        { id: 10, name: 'Black pepper', qty: 0.25, unit: 'tsp', price: 3, cat: 'Spice', emoji: '⚫' },
+        { id: 11, name: 'Salt', qty: 0.5, unit: 'tsp', price: 2, cat: 'Spice', emoji: '🧂' },
+      ],
+      steps: [
+        { n: 1, title: 'Prep the aromatics', secs: 120, heat: 'off',
+          ings: [{ e: '🧅', n: 'Onion' }, { e: '🍅', n: 'Tomato' }, { e: '🌶️', n: 'Green chili' }, { e: '🌿', n: 'Coriander' }],
+          desc: 'Finely chop the onion and deseed the tomato before chopping (deseeding stops the omelette getting watery). Mince the green chili and ginger. Roughly chop the coriander. Have everything ready — this dish cooks fast.' },
+        { n: 2, title: 'Whisk the eggs', secs: 60, heat: 'off',
+          ings: [{ e: '🥚', n: 'Eggs', q: '4' }, { e: '🟡', n: 'Turmeric' }, { e: '🌶️', n: 'Chili powder' }, { e: '⚫', n: 'Pepper' }, { e: '🧂', n: 'Salt' }],
+          desc: 'Crack eggs into a bowl. Add turmeric, chili powder, pepper, salt. Whisk vigorously for 30 seconds — you want it light and frothy. Stir in chopped onion, tomato, chili, ginger, and half the coriander. The mixture should look like a thick batter.' },
+        { n: 3, title: 'Heat the pan', secs: 60, heat: 'medium',
+          ings: [{ e: '🧈', n: 'Butter', q: '1 tbsp' }],
+          desc: 'Medium heat. Use a non-stick or well-seasoned pan. Add butter and swirl to coat the entire surface — including up the sides. The butter should foam but not brown. If it browns, you\'re too hot.' },
+        { n: 4, title: 'Pour and swirl', secs: 30, heat: 'medium',
+          ings: [{ e: '🥚', n: 'Egg mixture' }],
+          desc: 'Pour the egg mixture in. Immediately tilt the pan in a circular motion to spread evenly. Don\'t stir — let it set. After 20 seconds, you\'ll see the edges start to firm.' },
+        { n: 5, title: 'Lift and let liquid run', secs: 60, heat: 'medium',
+          ings: [],
+          desc: 'With a spatula, gently lift one edge and tilt the pan so uncooked egg flows underneath. Repeat on all four sides. The top should still be slightly glossy — never let it go fully dry, or it gets rubbery.' },
+        { n: 6, title: 'Fold and rest', secs: 30, heat: 'low',
+          ings: [],
+          desc: 'Lower heat. Slide your spatula under one half, fold it over the other — should be a clean half-moon. Cook 15 seconds more, just to seal. The center should be just-set, slightly soft — keep cooking carries it the rest of the way.' },
+        { n: 7, title: 'Plate and finish', secs: 30, heat: 'off',
+          ings: [{ e: '🌿', n: 'Remaining coriander' }],
+          desc: 'Slide onto a warm plate. Shower with remaining coriander leaves. Serve immediately with buttered toast, paratha, or pav — the omelette waits for no one and starts to weep if it sits.' },
+      ],
+    },
+
+    // -------------------------------------------------------
+    // 9. MANGO LASSI (Drinks flagship)
+    // -------------------------------------------------------
+    'mango-lassi': {
+      id: 'mango-lassi',
+      title: 'Mango Lassi',
+      sub: 'Yogurt-mango blended cooler',
+      cuisine: 'Indian · Beverage',
+      emoji: '🥭',
+      category: 'dri',
+      subcat: 'Shakes',
+      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E8A53D 35%, #B26F1F 70%, #0A0A0B 100%)',
+      baseServings: 2,
+      totalMin: 5,
+      difficulty: 'Easy',
+      youtube: yt('mango lassi authentic'),
+      nutrition: { calories: 220, protein: 6, carbs: 38, fats: 4, fiber: 2 },
+      ingredients: [
+        { id: 1, name: 'Ripe mango (Alphonso/Kesar)', qty: 1, unit: 'large', price: 80, cat: 'Produce', emoji: '🥭' },
+        { id: 2, name: 'Yogurt (chilled, thick)', qty: 250, unit: 'ml', price: 50, cat: 'Dairy', emoji: '🥥' },
+        { id: 3, name: 'Whole milk (chilled)', qty: 100, unit: 'ml', price: 20, cat: 'Dairy', emoji: '🥛' },
+        { id: 4, name: 'Sugar (or honey)', qty: 2, unit: 'tbsp', price: 6, cat: 'Pantry', emoji: '🍯' },
+        { id: 5, name: 'Green cardamom (powder)', qty: 0.25, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
+        { id: 6, name: 'Ice cubes', qty: 6, unit: '', price: 0, cat: 'Pantry', emoji: '🧊' },
+        { id: 7, name: 'Pistachio (garnish)', qty: 1, unit: 'tbsp', price: 12, cat: 'Pantry', emoji: '🥜' },
+        { id: 8, name: 'Saffron (optional)', qty: 4, unit: 'strands', price: 15, cat: 'Spice', emoji: '🌼' },
+      ],
+      steps: [
+        { n: 1, title: 'Prep the mango', secs: 120, heat: 'off',
+          ings: [{ e: '🥭', n: 'Mango' }],
+          desc: 'Peel mango. Slice flesh off the pit in large pieces. Use Alphonso or Kesar if you can find them — their natural sweetness and aroma make the drink. Frozen chunks work too.' },
+        { n: 2, title: 'Bloom the saffron (optional)', secs: 30, heat: 'off',
+          ings: [{ e: '🌼', n: 'Saffron' }, { e: '🥛', n: 'Warm milk', q: '1 tbsp' }],
+          desc: 'If using saffron: warm 1 tbsp of milk slightly and steep saffron strands in it for 30 seconds. This unlocks the color and aroma. Skip if you\'re short on time.' },
+        { n: 3, title: 'Blend until silky', secs: 60, heat: 'off',
+          ings: [{ e: '🥥', n: 'Yogurt' }, { e: '🥛', n: 'Milk' }, { e: '🍯', n: 'Sugar' }, { e: '🌿', n: 'Cardamom' }],
+          desc: 'Add mango, yogurt, cold milk, sugar, cardamom, and ice (plus saffron milk if using) to a blender. Blend 45-60 seconds until completely smooth and frothy. Taste — adjust sugar to your mango.' },
+        { n: 4, title: 'Pour and garnish', secs: 30, heat: 'off',
+          ings: [{ e: '🥜', n: 'Pistachio (slivered)' }],
+          desc: 'Pour into chilled glasses. Top with finely slivered pistachios and a few saffron strands if you have them. Serve immediately while frothy — the texture suffers if it sits.' },
+      ],
+    },
+
   };
 
   // ============================================================
@@ -372,6 +582,7 @@
     des: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6FB5 0%, #B97BFF 35%, #3D1F4D 75%, #0A0A0B 100%)',
     sna: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E89A1F 40%, #4D421F 75%, #0A0A0B 100%)',
     dri: 'radial-gradient(ellipse 80% 60% at 50% 60%, #4DD4FF 0%, #1F8FB2 40%, #1F3D4D 75%, #0A0A0B 100%)',
+    bre: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFAA3D 0%, #E8A53D 35%, #6B4D1F 75%, #0A0A0B 100%)',
   };
 
   const CAT_CUISINE = {
@@ -381,13 +592,13 @@
     des: 'Dessert',
     sna: 'Snack · Street Food',
     dri: 'Beverage',
+    bre: 'Breakfast',
   };
 
   const STUBS_BY_CAT = {
     // ---------- VEGETARIAN (35) — Indian-focused ----------
     veg: [
       ['paneer-tikka', 'Paneer Tikka', 'Tandoor-grilled cottage cheese cubes', 'Starters', '🧀', 35, 'Medium', 260, 320, 18, 12, 22, 3],
-      ['palak-paneer', 'Palak Paneer', 'Cottage cheese in creamed spinach', 'Curries', '🥬', 40, 'Medium', 280, 340, 18, 14, 24, 4],
       ['aloo-gobi', 'Aloo Gobi', 'Potato-cauliflower stir-fry with cumin', 'Mains', '🥔', 30, 'Easy', 160, 220, 6, 32, 8, 5],
       ['chana-masala', 'Chana Masala', 'Chickpea curry with onion-tomato base', 'Curries', '🫘', 45, 'Medium', 180, 320, 14, 42, 8, 8],
       ['dal-makhani', 'Dal Makhani', 'Slow-cooked black lentils with cream', 'Curries', '🫘', 90, 'Medium', 240, 380, 16, 32, 18, 8],
@@ -425,7 +636,6 @@
 
     // ---------- CONTINENTAL (35) — European classics ----------
     con: [
-      ['spaghetti-carbonara', 'Spaghetti Carbonara', 'Egg, pancetta, pecorino, pepper', 'Pasta', '🍝', 25, 'Medium', 320, 540, 22, 58, 22, 3],
       ['fettuccine-alfredo', 'Fettuccine Alfredo', 'Butter-parmesan cream pasta', 'Pasta', '🍝', 25, 'Easy', 280, 560, 18, 56, 30, 2],
       ['penne-arrabiata', 'Penne Arrabiata', 'Spicy tomato-garlic pasta', 'Pasta', '🍝', 25, 'Easy', 220, 420, 12, 64, 12, 4],
       ['lasagna', 'Classic Lasagna', 'Layered pasta, beef ragù, béchamel', 'Pasta', '🍱', 90, 'Hard', 480, 620, 30, 48, 32, 4],
@@ -581,7 +791,6 @@
 
     // ---------- DRINKS (35) ----------
     dri: [
-      ['mango-lassi', 'Mango Lassi', 'Yogurt-mango blended cooler', 'Shakes', '🥭', 5, 'Easy', 80, 220, 6, 38, 4, 2],
       ['sweet-lassi', 'Sweet Lassi', 'Yogurt, sugar, cardamom', 'Shakes', '🥛', 5, 'Easy', 60, 180, 6, 32, 4, 0],
       ['salty-lassi', 'Salty Lassi', 'Yogurt, cumin, salt cooler', 'Shakes', '🥛', 5, 'Easy', 50, 100, 6, 8, 4, 0],
       ['masala-chai', 'Masala Chai', 'Spiced milk tea with ginger-cardamom', 'Hot Drinks', '🍵', 15, 'Easy', 40, 80, 2, 12, 2, 0],
@@ -616,6 +825,55 @@
       ['iced-tea', 'Lemon Iced Tea', 'Brewed black tea, lemon, mint, ice', 'Coolers', '🧊', 15, 'Easy', 60, 60, 0, 16, 0, 0],
       ['masala-buttermilk', 'Masala Chaas', 'Spiced buttermilk, ginger, curry leaf', 'Coolers', '🥛', 10, 'Easy', 40, 80, 4, 8, 4, 0],
       ['kokum-sherbet', 'Kokum Sherbet', 'Tangy Konkan cooler', 'Coolers', '🟣', 15, 'Easy', 50, 100, 0, 26, 0, 0],
+    ],
+
+    // ---------- BREAKFAST (34 stubs + 1 deep = 35) ----------
+    bre: [
+      // Eggs (7 stubs; Masala Omelette is deep below)
+      ['akuri', 'Akuri', 'Parsi-style spiced scrambled eggs', 'Eggs', '🥚', 15, 'Easy', 120, 280, 18, 8, 20, 1],
+      ['bulls-eye-toast', "Bull's Eye on Toast", 'Sunny-side egg on buttered toast', 'Eggs', '🍳', 10, 'Easy', 80, 320, 14, 28, 18, 2],
+      ['cheese-omelette', 'Cheese Omelette', 'Folded omelette with melted cheddar', 'Eggs', '🧀', 12, 'Easy', 140, 360, 22, 4, 28, 0],
+      ['spanish-tortilla', 'Spanish Tortilla', 'Potato-onion egg cake, slow-cooked', 'Eggs', '🥘', 45, 'Medium', 180, 380, 18, 26, 22, 3],
+      ['shakshuka', 'Shakshuka', 'Eggs poached in spiced tomato sauce', 'Eggs', '🍳', 30, 'Medium', 220, 320, 16, 18, 20, 4],
+      ['egg-bhurji', 'Egg Bhurji', 'Indian-style spiced scrambled eggs', 'Eggs', '🥚', 15, 'Easy', 100, 300, 18, 8, 22, 2],
+      ['cloud-eggs', 'Cloud Eggs', 'Whipped egg whites baked with yolk', 'Eggs', '☁️', 20, 'Medium', 80, 180, 14, 2, 12, 0],
+
+      // Indian Breakfast (9)
+      ['poha', 'Poha', 'Maharashtrian flattened rice with peanuts', 'Indian Breakfast', '🍚', 20, 'Easy', 80, 280, 6, 48, 8, 3],
+      ['upma', 'Upma', 'Semolina with mustard seeds and curry leaves', 'Indian Breakfast', '🍲', 25, 'Easy', 80, 260, 8, 42, 8, 3],
+      ['sabudana-khichdi', 'Sabudana Khichdi', 'Tapioca pearls with peanuts and potato', 'Indian Breakfast', '⚪', 30, 'Medium', 120, 320, 6, 56, 10, 2],
+      ['plain-paratha', 'Plain Paratha', 'Layered Indian flatbread, ghee-roasted', 'Indian Breakfast', '🫓', 25, 'Easy', 80, 280, 6, 38, 10, 2],
+      ['puri-bhaji', 'Puri Bhaji', 'Puffy fried bread with potato curry', 'Indian Breakfast', '🍛', 45, 'Medium', 140, 480, 10, 56, 22, 4],
+      ['vermicelli-upma', 'Vermicelli Upma', 'Roasted vermicelli with mixed vegetables', 'Indian Breakfast', '🍝', 25, 'Easy', 100, 280, 8, 44, 6, 3],
+      ['pongal', 'Pongal', 'South Indian rice-lentil porridge with pepper', 'Indian Breakfast', '🍚', 35, 'Easy', 100, 320, 10, 48, 8, 4],
+      ['bread-upma', 'Bread Upma', 'Spiced sautéed bread cubes', 'Indian Breakfast', '🍞', 20, 'Easy', 80, 280, 8, 42, 8, 2],
+      ['misal-pav', 'Misal Pav', 'Sprouted lentil curry with buttered pav', 'Indian Breakfast', '🥣', 60, 'Medium', 160, 380, 14, 48, 14, 8],
+
+      // Pancakes & Waffles (5)
+      ['buttermilk-pancakes', 'Buttermilk Pancakes', 'Fluffy stack with maple syrup', 'Pancakes & Waffles', '🥞', 25, 'Easy', 180, 440, 10, 58, 18, 2],
+      ['belgian-waffles', 'Belgian Waffles', 'Crispy-edged sweet waffles', 'Pancakes & Waffles', '🧇', 35, 'Medium', 220, 460, 10, 58, 20, 2],
+      ['banana-pancakes', 'Banana Pancakes', 'Ripe banana mashed into batter', 'Pancakes & Waffles', '🍌', 25, 'Easy', 160, 420, 10, 62, 14, 4],
+      ['chocolate-chip-pancakes', 'Chocolate Chip Pancakes', 'Buttermilk pancakes with chocolate chunks', 'Pancakes & Waffles', '🍫', 25, 'Easy', 220, 480, 10, 62, 22, 3],
+      ['nutella-crepes', 'Nutella Crepes', 'Thin French crepes with hazelnut spread', 'Pancakes & Waffles', '🥞', 30, 'Medium', 220, 460, 8, 56, 22, 2],
+
+      // Bowls & Cereals (6)
+      ['overnight-oats', 'Overnight Oats', 'Rolled oats soaked in milk, berries, honey', 'Bowls & Cereals', '🥣', 5, 'Easy', 120, 320, 12, 48, 8, 8],
+      ['granola-bowl', 'Granola Bowl', 'Crunchy toasted granola, yogurt, fruit', 'Bowls & Cereals', '🌾', 8, 'Easy', 180, 380, 14, 52, 12, 7],
+      ['smoothie-bowl', 'Smoothie Bowl', 'Thick blended fruits with toppings', 'Bowls & Cereals', '🥥', 10, 'Easy', 160, 340, 10, 58, 6, 8],
+      ['muesli-yogurt', 'Muesli with Yogurt', 'Bircher-style with apple and nuts', 'Bowls & Cereals', '🥣', 10, 'Easy', 140, 360, 14, 48, 12, 6],
+      ['chia-pudding', 'Chia Pudding', 'Chia seeds soaked in coconut milk', 'Bowls & Cereals', '⚫', 10, 'Easy', 140, 280, 8, 32, 14, 12],
+      ['acai-bowl', 'Acai Bowl', 'Frozen acai with banana, granola, berries', 'Bowls & Cereals', '🍇', 10, 'Easy', 220, 360, 8, 56, 12, 8],
+
+      // Toasts (4)
+      ['avocado-toast', 'Avocado Toast', 'Smashed avo on sourdough with chili flakes', 'Toasts', '🥑', 10, 'Easy', 180, 320, 10, 32, 18, 8],
+      ['eggs-benedict', 'Eggs Benedict', 'Poached egg, ham, hollandaise on muffin', 'Toasts', '🥚', 35, 'Hard', 280, 480, 22, 32, 28, 2],
+      ['bagel-cream-cheese', 'Bagel with Cream Cheese', 'Toasted bagel, schmear, lox optional', 'Toasts', '🥯', 8, 'Easy', 160, 380, 14, 48, 16, 3],
+      ['breakfast-sandwich', 'Breakfast Sandwich', 'Egg, cheese, bacon on English muffin', 'Toasts', '🥪', 15, 'Easy', 200, 460, 22, 36, 24, 2],
+
+      // Western Plates (3)
+      ['breakfast-burrito', 'Breakfast Burrito', 'Tortilla wrapped with egg, beans, salsa', 'Western Plates', '🌯', 25, 'Medium', 220, 540, 22, 56, 26, 6],
+      ['full-english', 'Full English', 'Eggs, bacon, beans, sausage, mushroom', 'Western Plates', '🍳', 45, 'Medium', 360, 680, 36, 42, 38, 6],
+      ['pancake-stack', 'Pancake Stack', 'Tall stack with butter, syrup, berries', 'Western Plates', '🥞', 30, 'Easy', 240, 580, 12, 78, 22, 4],
     ],
   };
 
