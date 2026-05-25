@@ -813,6 +813,9 @@ const Icon = ({ name, ...props }) => {
     youtube: <><polygon points="9.5 7.5 9.5 16.5 16 12"/></>,
     sparkles: <><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></>,
     home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    fridge: <><path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 10h14"/><path d="M15 7v6"/><path d="M9 7v6"/></>,
+    book: <><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></>,
+    user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
   };
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -827,6 +830,15 @@ const SteamWisp = () => (
     <path d="M 20 70 Q 12 55, 20 40 Q 28 25, 20 10" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
     <path d="M 40 70 Q 48 55, 40 40 Q 32 25, 40 10" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
   </svg>
+);
+
+// Recipe is "deep" inside the Home tab's nav hierarchy, so Home stays the active tab.
+const TabBar = () => (
+  <nav className="tabbar">
+    <a className="tab active" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
+    <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
+    <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+  </nav>
 );
 
 // === Helpers ===
@@ -1076,6 +1088,7 @@ const StubScreen = ({ recipe, saved, onToggleSave }) => (
           );
         })}
     </div>
+    <TabBar/>
   </div>
 );
 
@@ -1272,6 +1285,7 @@ const FullRecipeScreen = ({ recipe, saved, onToggleSave }) => {
         <div className="yt-icon"><Icon name="youtube"/></div>
         <span className="lbl">Watch Demo</span>
       </a>
+      <TabBar/>
     </div>
   );
 };
@@ -1288,6 +1302,7 @@ const NotFoundScreen = ({ id }) => (
     <a className="nf-btn" href="./category.html?cat=non">
       <Icon name="chevLeft"/> Back to Non-Veg
     </a>
+    <TabBar/>
   </div>
 );
 
