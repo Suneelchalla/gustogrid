@@ -927,6 +927,41 @@ const hashId = (id) => {
   return Math.abs(h);
 };
 
+// Read fridge from localStorage — used for real match computation
+const loadFridge = () => {
+  try {
+    const raw = localStorage.getItem('gg-fridge');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+};
+const FRIDGE = loadFridge().map(item => String(item).toLowerCase());
+
+// Compute fridge-match for ANY recipe (deep or stub).
+// For deep recipes: count ingredients in fridge / total ingredients.
+// For stubs: heuristic — count fridge items mentioned in title+sub.
+const computeMatch = (r) => {
+  if (FRIDGE.length === 0) {
+    // No fridge → pseudo-random for sortable variety
+    return 30 + (hashId(r.id) % 60);
+  }
+  if (r.ingredients && r.ingredients.length) {
+    // Deep recipe: exact ingredient match
+    const matched = r.ingredients.filter(ing => {
+      const name = ing.name.toLowerCase();
+      return FRIDGE.some(f => name.includes(f) || f.includes(name.split(' ')[0]));
+    });
+    return Math.round((matched.length / r.ingredients.length) * 100);
+  }
+  // Stub: heuristic from title + sub + subcat
+  const text = `${r.title} ${r.sub || ''} ${r.subcat || ''}`.toLowerCase();
+  const hits = FRIDGE.filter(f => text.includes(f)).length;
+  // Convert hits to a 0-100 score: 0 hits → 20%, each hit adds ~25% up to cap
+  if (hits === 0) return 20 + (hashId(r.id) % 25);
+  if (hits === 1) return 55 + (hashId(r.id) % 15);
+  if (hits === 2) return 75 + (hashId(r.id) % 15);
+  return 90 + (hashId(r.id) % 10);
+};
+
 // Pull recipes for active category from data layer, normalize shape
 const RECIPES = (window.GG_GET_BY_CATEGORY ? window.GG_GET_BY_CATEGORY(ACTIVE_CAT) : []).map(r => {
   const legacy = LEGACY_META[r.id];
@@ -934,6 +969,10 @@ const RECIPES = (window.GG_GET_BY_CATEGORY ? window.GG_GET_BY_CATEGORY(ACTIVE_CA
     ? Math.round(r.ingredients.reduce((s, i) => s + i.price, 0))
     : (r.baseCost || 0);
   const h = hashId(r.id);
+  // Match: legacy override > computed > fallback
+  const matchScore = legacy && legacy.match != null && FRIDGE.length === 0
+    ? legacy.match
+    : computeMatch(r);
   return {
     id: r.id,
     name: r.title,
@@ -945,7 +984,7 @@ const RECIPES = (window.GG_GET_BY_CATEGORY ? window.GG_GET_BY_CATEGORY(ACTIVE_CA
     difficulty: r.difficulty,
     emoji: r.emoji,
     heroGradient: r.heroGradient,
-    match: (legacy && legacy.match) != null ? legacy.match : 30 + (h % 60),
+    match: matchScore,
     popular: (legacy && legacy.popular) != null ? legacy.popular : 50 + (h % 45),
     featured: (legacy && legacy.featured) || false,
     isStub: r.isStub || false,
