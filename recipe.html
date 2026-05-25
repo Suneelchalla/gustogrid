@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Butter Chicken — GustoGrid</title>
-<meta name="description" content="Creamy, smoky, restaurant-style butter chicken with portion-aware ingredients, live timers, and stove heat indicators.">
+<title>Recipe — GustoGrid</title>
+<meta name="description" content="A dish with portion-aware ingredients, live timers, and stove heat indicators.">
 
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#FF6B35">
@@ -29,43 +29,35 @@
     --heat-high: #FF3D5A;
   }
 
-  .app-container {
-    padding-bottom: calc(160px + var(--safe-bottom));
-  }
+  .app-container { padding-bottom: calc(160px + var(--safe-bottom)); }
 
   /* === HERO === */
-  .hero {
-    position: relative;
-    height: 380px;
-    overflow: hidden;
-  }
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #C93D1F 35%, #4D1F1F 75%, #0A0A0B 100%);
-  }
+  .hero { position: relative; height: 380px; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; }
   .hero-bg::after {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='nh'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23nh)'/%3E%3C/svg%3E");
     mix-blend-mode: overlay;
     opacity: 0.8;
   }
   .hero-grain {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 0%, transparent 50%, rgba(10,10,11,0.6) 80%, var(--bg) 100%);
   }
-  .hero-dish {
+  .hero-emoji {
     position: absolute;
-    bottom: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 240px;
-    height: 240px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    font-size: 140px;
+    line-height: 1;
+    filter: drop-shadow(0 12px 32px rgba(0,0,0,0.5));
     z-index: 1;
+    animation: hero-float 5s ease-in-out infinite;
+  }
+  @keyframes hero-float {
+    0%, 100% { transform: translate(-50%, -55%); }
+    50% { transform: translate(-50%, -58%); }
   }
   .steam-wisp {
     position: absolute;
@@ -74,13 +66,13 @@
     transform: translateX(-50%);
     width: 60px;
     height: 80px;
-    opacity: 0.6;
+    opacity: 0.5;
     animation: steam 4s ease-in-out infinite;
     z-index: 1;
   }
   @keyframes steam {
-    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.5; }
-    50% { transform: translateX(-50%) translateY(-20px); opacity: 0.8; }
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.4; }
+    50% { transform: translateX(-50%) translateY(-20px); opacity: 0.75; }
   }
   .hero-nav {
     position: absolute;
@@ -144,7 +136,7 @@
     letter-spacing: -0.03em;
     color: white;
     margin: 0 0 6px;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
   }
   .hero-title em { font-style: italic; }
   .hero-sub {
@@ -175,20 +167,13 @@
     width: 1px;
     background: var(--border);
   }
-  .qs-icon {
-    color: var(--orange);
-    margin: 0 auto 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .qs-icon { color: var(--orange); margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; }
   .qs-icon svg { width: 16px; height: 16px; }
   .qs-val {
     font-family: 'Fraunces', serif;
     font-size: 17px;
     font-weight: 500;
     color: var(--text);
-    letter-spacing: -0.01em;
     line-height: 1;
     margin-bottom: 3px;
   }
@@ -198,6 +183,144 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
+
+  /* === STUB STATE === */
+  .stub-card {
+    margin: 28px 20px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(255,194,51,0.06), rgba(255,107,53,0.02));
+    border: 1px solid rgba(255,194,51,0.25);
+    border-radius: 22px;
+    text-align: center;
+  }
+  .stub-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    background: linear-gradient(135deg, #FFC233, #E8A53D);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px -8px rgba(255,194,51,0.5);
+  }
+  .stub-icon svg { width: 26px; height: 26px; color: #1a0d05; stroke-width: 2.2; }
+  .stub-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .stub-card h3 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #FFC233, #FF6B35);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stub-card p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-2);
+    margin: 0 0 18px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .stub-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .stub-tag {
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+  }
+  .stub-tag.warn {
+    background: rgba(255,194,51,0.1);
+    border-color: rgba(255,194,51,0.3);
+    color: var(--amber);
+  }
+  .stub-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .stub-btn {
+    padding: 13px 18px;
+    border-radius: 14px;
+    font-family: 'Geist', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s;
+    border: none;
+  }
+  .stub-btn:active { transform: scale(0.97); }
+  .stub-btn.primary {
+    background: linear-gradient(135deg, #FF3D5A, #FF6B35);
+    color: white;
+    box-shadow: 0 8px 20px -8px rgba(255,61,90,0.5);
+  }
+  .stub-btn.secondary {
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+  }
+  .stub-btn svg { width: 14px; height: 14px; }
+
+  /* === NOT FOUND STATE === */
+  .nf-wrap {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .nf-emoji { font-size: 64px; margin-bottom: 16px; opacity: 0.6; }
+  .nf-wrap h2 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .nf-wrap p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 0 0 24px;
+    max-width: 280px;
+  }
+  .nf-btn {
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    border-radius: 12px;
+    color: #1a0d05;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nf-btn svg { width: 14px; height: 14px; }
 
   /* === PORTION MULTIPLIER === */
   .portion-card {
@@ -270,11 +393,7 @@
     opacity: 0.7;
   }
 
-  /* === SECTION HEADING === */
-  .sect {
-    padding: 0 20px;
-    margin-top: 32px;
-  }
+  .sect { padding: 0 20px; margin-top: 32px; }
   .sect-head {
     display: flex;
     align-items: flex-end;
@@ -298,12 +417,7 @@
   }
 
   /* === NUTRIENT RINGS === */
-  .nutrient-row {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 0 20px 4px;
-  }
+  .nutrient-row { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 4px; }
   .nut-card {
     flex-shrink: 0;
     width: 100px;
@@ -313,17 +427,8 @@
     padding: 14px 12px 12px;
     text-align: center;
   }
-  .nut-ring-wrap {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 8px;
-    position: relative;
-  }
-  .nut-ring-track {
-    fill: none;
-    stroke: rgba(255,255,255,0.06);
-    stroke-width: 4;
-  }
+  .nut-ring-wrap { width: 64px; height: 64px; margin: 0 auto 8px; position: relative; }
+  .nut-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
   .nut-ring-fill {
     fill: none;
     stroke-width: 4;
@@ -346,7 +451,6 @@
     font-weight: 500;
     line-height: 1;
     color: var(--text);
-    letter-spacing: -0.01em;
   }
   .nut-ring-val .u {
     font-size: 8px;
@@ -354,12 +458,7 @@
     margin-top: 1px;
     letter-spacing: 0.05em;
   }
-  .nut-lbl {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-2);
-    margin-bottom: 2px;
-  }
+  .nut-lbl { font-size: 11px; font-weight: 500; color: var(--text-2); margin-bottom: 2px; }
   .nut-pct {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
@@ -368,20 +467,9 @@
   }
 
   /* === COST CARD === */
-  .cost-card {
-    margin: 0 20px;
-    padding: 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-  }
-  .cost-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .cost-left .lbl {
+  .cost-card { margin: 0 20px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
+  .cost-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+  .cost-left .lbl, .cost-right .lbl {
     font-size: 11px;
     color: var(--text-3);
     text-transform: uppercase;
@@ -399,52 +487,16 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.02em;
-    transition: all 0.3s;
   }
   .cost-right { text-align: right; }
-  .cost-right .lbl {
-    font-size: 10px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 2px;
-  }
-  .cost-right .val {
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text);
-  }
-  .cost-bar {
-    display: flex;
-    height: 8px;
-    border-radius: 100px;
-    overflow: hidden;
-    gap: 2px;
-    margin-bottom: 10px;
-  }
+  .cost-right .lbl { font-size: 10px; }
+  .cost-right .val { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; color: var(--text); }
+  .cost-bar { display: flex; height: 8px; border-radius: 100px; overflow: hidden; gap: 2px; margin-bottom: 10px; }
   .cost-seg { transition: flex 0.4s ease; }
-  .cost-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 14px;
-  }
-  .cost-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-2);
-  }
-  .cost-legend-item .swatch {
-    width: 8px; height: 8px;
-    border-radius: 3px;
-  }
-  .cost-legend-item .price {
-    color: var(--text-3);
-    margin-left: 2px;
-    font-family: 'JetBrains Mono', monospace;
-  }
+  .cost-legend { display: flex; flex-wrap: wrap; gap: 12px 14px; }
+  .cost-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
+  .cost-legend-item .swatch { width: 8px; height: 8px; border-radius: 3px; }
+  .cost-legend-item .price { color: var(--text-3); margin-left: 2px; font-family: 'JetBrains Mono', monospace; }
 
   /* === GROCERY === */
   .grocery {
@@ -461,19 +513,9 @@
     align-items: center;
     border-bottom: 1px solid var(--border);
   }
-  .grocery-head .a {
-    font-family: 'Fraunces', serif;
-    font-size: 15px;
-    font-style: italic;
-    color: var(--text);
-  }
-  .grocery-head .b {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-3);
-  }
+  .grocery-head .a { font-family: 'Fraunces', serif; font-size: 15px; font-style: italic; color: var(--text); }
+  .grocery-head .b { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); }
   .grocery-head .b .checked { color: var(--mint); }
-
   .grocery-group { padding: 10px 18px; }
   .group-lbl {
     font-family: 'JetBrains Mono', monospace;
@@ -483,7 +525,6 @@
     letter-spacing: 0.15em;
     margin: 8px 0 6px;
   }
-
   .ing-row {
     display: flex;
     align-items: center;
@@ -496,7 +537,6 @@
   .ing-row.checked .ing-info .qty { opacity: 0.5; }
   .ing-row.checked .ing-price { opacity: 0.5; }
   .ing-row.checked .ing-emoji { filter: grayscale(0.6); opacity: 0.7; }
-
   .ing-check {
     width: 22px; height: 22px;
     border-radius: 7px;
@@ -519,22 +559,10 @@
     transform: scale(0.5);
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .ing-row.checked .ing-check svg {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .ing-emoji {
-    font-size: 22px;
-    width: 24px;
-    text-align: center;
-  }
+  .ing-row.checked .ing-check svg { opacity: 1; transform: scale(1); }
+  .ing-emoji { font-size: 22px; width: 24px; text-align: center; }
   .ing-info { flex: 1; min-width: 0; }
-  .ing-info .nm {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-  }
+  .ing-info .nm { font-size: 13px; font-weight: 500; color: var(--text); }
   .ing-info .qty {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -550,12 +578,7 @@
   }
 
   /* === COOKING STEPS === */
-  .steps-wrap {
-    margin: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
+  .steps-wrap { margin: 0 20px; display: flex; flex-direction: column; gap: 14px; }
   .step-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -568,12 +591,7 @@
     box-shadow: 0 0 0 1px rgba(255,107,53,0.15), 0 12px 32px -16px rgba(255,107,53,0.3);
   }
   .step-card.done { opacity: 0.7; }
-  .step-head {
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .step-head { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
   .step-num {
     width: 36px; height: 36px;
     background: var(--surface-2);
@@ -588,28 +606,18 @@
     color: var(--text);
     flex-shrink: 0;
   }
-  .step-card.running .step-num {
-    background: linear-gradient(135deg, #FF6B35, #FFC233);
-    color: #1a0d05;
-    border-color: transparent;
-  }
-  .step-card.done .step-num {
-    background: linear-gradient(135deg, #3DDC97, #1F9E6E);
-    color: #052a1c;
-    border-color: transparent;
-  }
+  .step-card.running .step-num { background: linear-gradient(135deg, #FF6B35, #FFC233); color: #1a0d05; border-color: transparent; }
+  .step-card.done .step-num { background: linear-gradient(135deg, #3DDC97, #1F9E6E); color: #052a1c; border-color: transparent; }
   .step-meta { flex: 1; min-width: 0; }
   .step-title {
     font-family: 'Fraunces', serif;
     font-size: 16px;
     font-weight: 500;
     color: var(--text);
-    letter-spacing: -0.01em;
     margin: 0 0 4px;
     line-height: 1.2;
   }
 
-  /* Heat badge */
   .heat-badge {
     display: inline-flex;
     align-items: center;
@@ -643,25 +651,11 @@
     color: var(--text-3);
     border: 1px solid var(--border);
   }
-  .heat-flames {
-    display: inline-flex;
-    gap: 1px;
-    margin-right: 1px;
-  }
+  .heat-flames { display: inline-flex; gap: 1px; margin-right: 1px; }
 
   .step-body { padding: 0 16px 14px; }
-  .step-desc {
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--text-2);
-    margin: 0 0 12px;
-  }
-  .step-ing-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-  }
+  .step-desc { font-size: 13px; line-height: 1.55; color: var(--text-2); margin: 0 0 12px; }
+  .step-ing-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
   .step-ing-chip {
     display: inline-flex;
     align-items: center;
@@ -674,13 +668,8 @@
     color: var(--text-2);
   }
   .step-ing-chip .ic-emoji { font-size: 12px; }
-  .step-ing-chip .ic-qty {
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-3);
-    margin-left: 2px;
-  }
+  .step-ing-chip .ic-qty { font-family: 'JetBrains Mono', monospace; color: var(--text-3); margin-left: 2px; }
 
-  /* Timer */
   .step-timer {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -723,9 +712,7 @@
     border-radius: 100px;
     transition: width 1s linear;
   }
-  .step-card.done .timer-bar {
-    background: linear-gradient(90deg, #3DDC97, #1F9E6E);
-  }
+  .step-card.done .timer-bar { background: linear-gradient(90deg, #3DDC97, #1F9E6E); }
   .timer-controls { display: flex; gap: 6px; }
   .timer-btn {
     width: 34px;
@@ -737,12 +724,8 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
   }
-  .timer-btn.primary {
-    background: linear-gradient(135deg, #FF6B35, #FFC233);
-    border-color: transparent;
-  }
+  .timer-btn.primary { background: linear-gradient(135deg, #FF6B35, #FFC233); border-color: transparent; }
   .timer-btn.primary svg { color: #1a0d05; }
   .timer-btn svg { width: 14px; height: 14px; color: var(--text); stroke-width: 2.2; }
 
@@ -784,7 +767,6 @@
     font-size: 14px;
     font-weight: 500;
     color: white;
-    letter-spacing: -0.01em;
   }
 </style>
 </head>
@@ -804,12 +786,15 @@
 
 <div id="root"></div>
 
+<!-- Recipe data layer (must load before React script) -->
+<script src="./data/recipes.js"></script>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useRef } = React;
+const { useState, useEffect, useMemo } = React;
 
 const Icon = ({ name, ...props }) => {
   const paths = {
@@ -826,6 +811,8 @@ const Icon = ({ name, ...props }) => {
     chef: <><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/></>,
     users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
     youtube: <><polygon points="9.5 7.5 9.5 16.5 16 12"/></>,
+    sparkles: <><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></>,
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
   };
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -834,39 +821,6 @@ const Icon = ({ name, ...props }) => {
   );
 };
 
-const DishBowl = () => (
-  <svg viewBox="0 0 240 240" fill="none">
-    <defs>
-      <radialGradient id="bowl-grad" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stopColor="#FFE0B5"/>
-        <stop offset="40%" stopColor="#FF8B43"/>
-        <stop offset="100%" stopColor="#A82E18"/>
-      </radialGradient>
-      <radialGradient id="rim-grad" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#1a1a1d"/>
-        <stop offset="100%" stopColor="#0a0a0b"/>
-      </radialGradient>
-      <filter id="sauce-blur" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="1.5"/>
-      </filter>
-    </defs>
-    <ellipse cx="120" cy="195" rx="100" ry="12" fill="rgba(0,0,0,0.4)" filter="url(#sauce-blur)"/>
-    <ellipse cx="120" cy="120" rx="110" ry="32" fill="url(#rim-grad)"/>
-    <ellipse cx="120" cy="118" rx="102" ry="28" fill="url(#bowl-grad)"/>
-    <path d="M 60 118 Q 90 108, 120 118 T 180 118" stroke="#FFF4E0" strokeWidth="3" fill="none" opacity="0.9" strokeLinecap="round"/>
-    <path d="M 80 124 Q 120 116, 160 124" stroke="#FFF4E0" strokeWidth="2" fill="none" opacity="0.7" strokeLinecap="round"/>
-    <ellipse cx="90" cy="115" rx="10" ry="7" fill="#7a3318" opacity="0.85"/>
-    <ellipse cx="135" cy="112" rx="12" ry="8" fill="#7a3318" opacity="0.85"/>
-    <ellipse cx="158" cy="120" rx="9" ry="6" fill="#7a3318" opacity="0.85"/>
-    <ellipse cx="105" cy="125" rx="8" ry="6" fill="#7a3318" opacity="0.8"/>
-    <circle cx="95" cy="115" r="1.5" fill="#3a5a1a"/>
-    <circle cx="140" cy="118" r="1.5" fill="#3a5a1a"/>
-    <circle cx="115" cy="120" r="1" fill="#3a5a1a"/>
-    <circle cx="165" cy="115" r="1.2" fill="#3a5a1a"/>
-    <ellipse cx="105" cy="108" rx="22" ry="4" fill="rgba(255,255,255,0.2)"/>
-  </svg>
-);
-
 const SteamWisp = () => (
   <svg viewBox="0 0 60 80" fill="none">
     <path d="M 30 75 Q 20 60, 30 45 Q 40 30, 30 15 Q 22 5, 30 0" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinecap="round"/>
@@ -874,68 +828,6 @@ const SteamWisp = () => (
     <path d="M 40 70 Q 48 55, 40 40 Q 32 25, 40 10" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
   </svg>
 );
-
-// === Recipe data ===
-const RECIPE = {
-  id: 'butter-chicken',
-  title: 'Butter Chicken',
-  sub: 'Creamy, smoky, restaurant-style',
-  cuisine: 'Indian · Non-Vegetarian',
-  baseServings: 4,
-  totalMin: 45,
-  difficulty: 'Medium',
-  youtube: 'https://www.youtube.com/results?search_query=butter+chicken+restaurant+style',
-  nutrition: { calories: 480, protein: 32, carbs: 22, fats: 28, fiber: 4 },
-  baseCost: 420,
-  ingredients: [
-    { id: 1, name: 'Chicken thigh', qty: 500, unit: 'g', price: 180, cat: 'Protein', emoji: '🍗' },
-    { id: 2, name: 'Tomato', qty: 4, unit: '', price: 30, cat: 'Produce', emoji: '🍅' },
-    { id: 3, name: 'Onion', qty: 2, unit: '', price: 15, cat: 'Produce', emoji: '🧅' },
-    { id: 4, name: 'Garlic', qty: 8, unit: 'cloves', price: 10, cat: 'Produce', emoji: '🧄' },
-    { id: 5, name: 'Ginger', qty: 20, unit: 'g', price: 8, cat: 'Produce', emoji: '🫚' },
-    { id: 6, name: 'Butter', qty: 60, unit: 'g', price: 45, cat: 'Dairy', emoji: '🧈' },
-    { id: 7, name: 'Heavy cream', qty: 100, unit: 'ml', price: 60, cat: 'Dairy', emoji: '🥛' },
-    { id: 8, name: 'Yogurt', qty: 100, unit: 'ml', price: 20, cat: 'Dairy', emoji: '🥥' },
-    { id: 9, name: 'Cashews', qty: 30, unit: 'g', price: 25, cat: 'Pantry', emoji: '🥜' },
-    { id: 10, name: 'Garam masala', qty: 2, unit: 'tsp', price: 15, cat: 'Spice', emoji: '🌿' },
-    { id: 11, name: 'Kasuri methi', qty: 1, unit: 'tbsp', price: 8, cat: 'Spice', emoji: '🌿' },
-    { id: 12, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-  ],
-  steps: [
-    { n: 1, title: 'Marinate the chicken', secs: 600, heat: 'off', ings: [
-      { e: '🍗', n: 'Chicken', q: '500g' },
-      { e: '🥥', n: 'Yogurt', q: '100ml' },
-      { e: '🌿', n: 'Garam masala', q: '1 tsp' },
-    ], desc: 'Cube chicken into 2cm pieces. Whisk yogurt with half the garam masala, salt, a pinch of turmeric. Coat chicken; rest 10 min minimum.' },
-    { n: 2, title: 'Sear on screaming heat', secs: 360, heat: 'high', ings: [
-      { e: '🍗', n: 'Marinated chicken' },
-      { e: '🧈', n: 'Butter', q: '20g' },
-    ], desc: 'Heat a heavy pan until smoking. Add butter, then chicken in a single layer. Sear undisturbed 90 sec per side until charred edges form. Remove.' },
-    { n: 3, title: 'Bloom the aromatics', secs: 180, heat: 'medium', ings: [
-      { e: '🧈', n: 'Butter', q: '20g' },
-      { e: '🧅', n: 'Onion', q: '2' },
-      { e: '🧄', n: 'Garlic', q: '8' },
-      { e: '🫚', n: 'Ginger', q: '20g' },
-    ], desc: 'Lower flame. Melt butter, add onion, garlic, ginger paste. Stir constantly until golden and aroma blooms — about 3 min.' },
-    { n: 4, title: 'Build the gravy base', secs: 480, heat: 'medium', ings: [
-      { e: '🍅', n: 'Tomato', q: '4' },
-      { e: '🥜', n: 'Cashews', q: '30g' },
-    ], desc: 'Add chopped tomatoes and soaked cashews. Cook 8 min, mashing as you go, until tomatoes collapse and oil separates at edges.' },
-    { n: 5, title: 'Blend until silky', secs: 120, heat: 'off', ings: [], desc: 'Cool slightly. Transfer to blender, puree until completely smooth. Strain back into pan through a fine mesh for restaurant-grade texture.' },
-    { n: 6, title: 'Simmer with cream', secs: 600, heat: 'low', ings: [
-      { e: '🥛', n: 'Cream', q: '50ml' },
-      { e: '🧈', n: 'Butter', q: '20g' },
-    ], desc: 'Return puree to low heat. Stir in cream and remaining butter. Simmer gently — never boil — 10 min until glossy and unified.' },
-    { n: 7, title: 'Reunite and finish', secs: 300, heat: 'low', ings: [
-      { e: '🍗', n: 'Seared chicken' },
-      { e: '🌿', n: 'Kasuri methi', q: '1 tbsp' },
-      { e: '🥛', n: 'Cream', q: '50ml' },
-    ], desc: 'Slide chicken back into the gravy. Crush kasuri methi between palms over the pan. Final cream swirl. Cover, cook 5 min.' },
-    { n: 8, title: 'Rest and serve', secs: 120, heat: 'off', ings: [
-      { e: '🍋', n: 'Lemon wedge' },
-    ], desc: 'Rest off heat 2 min. Squeeze lemon. Serve hot with naan, basmati, or jeera rice. Reserve a methi crumb for the garnish.' },
-  ],
-};
 
 // === Helpers ===
 const formatQty = (n) => {
@@ -956,6 +848,13 @@ const formatTime = (s) => {
   const m = Math.floor(s / 60);
   const sec = s % 60;
   return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+};
+
+const loadSaved = () => {
+  try {
+    const raw = localStorage.getItem('gg-bookmarks');
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
 };
 
 // === Nutrient Ring ===
@@ -987,7 +886,6 @@ const NutrientRing = ({ value, max, label, unit, color, pct }) => {
   );
 };
 
-// === Heat Badge ===
 const HeatBadge = ({ level }) => {
   const config = {
     off: { label: 'Off heat', flames: 0 },
@@ -1011,22 +909,16 @@ const HeatBadge = ({ level }) => {
   );
 };
 
-// === Step Card with built-in timer state ===
 const StepCard = ({ step }) => {
   const [secs, setSecs] = useState(step.secs);
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!running) return;
-    if (secs <= 0) return;
+    if (!running || secs <= 0) return;
     const id = setInterval(() => {
       setSecs(s => {
-        if (s <= 1) {
-          setRunning(false);
-          setDone(true);
-          return 0;
-        }
+        if (s <= 1) { setRunning(false); setDone(true); return 0; }
         return s - 1;
       });
     }, 1000);
@@ -1037,19 +929,10 @@ const StepCard = ({ step }) => {
   const pct = ((step.secs - secs) / step.secs) * 100;
 
   const onPlayPause = () => {
-    if (done) {
-      setSecs(step.secs);
-      setDone(false);
-      setRunning(true);
-    } else {
-      setRunning(r => !r);
-    }
+    if (done) { setSecs(step.secs); setDone(false); setRunning(true); }
+    else { setRunning(r => !r); }
   };
-  const onReset = () => {
-    setSecs(step.secs);
-    setRunning(false);
-    setDone(false);
-  };
+  const onReset = () => { setSecs(step.secs); setRunning(false); setDone(false); };
 
   return (
     <div className={`step-card ${stateCls}`}>
@@ -1092,28 +975,124 @@ const StepCard = ({ step }) => {
   );
 };
 
-const loadSaved = () => {
-  try {
-    const raw = localStorage.getItem('gg-bookmarks');
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch { return new Set(); }
-};
+// === Hero (shared by full + stub) ===
+const Hero = ({ recipe, saved, onToggleSave }) => (
+  <div className="hero">
+    <div className="hero-bg" style={{background: recipe.heroGradient}}/>
+    <div className="hero-grain"/>
+    <div className="hero-nav">
+      <a className="hero-btn" href="./category.html?cat=non"><Icon name="chevLeft"/></a>
+      <div className="hero-btn-group">
+        <button className="hero-btn" onClick={onToggleSave} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
+          <Icon name={saved ? 'bookmarkFilled' : 'bookmark'} style={saved ? {color: 'var(--amber)'} : {}}/>
+        </button>
+        <div className="hero-btn"><Icon name="share"/></div>
+      </div>
+    </div>
+    <div className="steam-wisp"><SteamWisp/></div>
+    <div className="hero-emoji">{recipe.emoji}</div>
+    <div className="hero-text">
+      <div className="cuisine-chip">
+        <span className="dot"/>{recipe.cuisine}
+      </div>
+      <h1 className="hero-title">{recipe.title}</h1>
+      <p className="hero-sub">{recipe.sub}</p>
+    </div>
+  </div>
+);
 
-// === Main Recipe Screen ===
-const RecipeScreen = () => {
-  const [servings, setServings] = useState(RECIPE.baseServings);
+// === Stub State ===
+const StubScreen = ({ recipe, saved, onToggleSave }) => (
+  <div className="app-container fade-up">
+    <Hero recipe={recipe} saved={saved} onToggleSave={onToggleSave}/>
+
+    <div className="quick-stats">
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="clock"/></div>
+        <div className="qs-val">{recipe.totalMin} min</div>
+        <div className="qs-lbl">Total</div>
+      </div>
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="chef"/></div>
+        <div className="qs-val">{recipe.difficulty}</div>
+        <div className="qs-lbl">Difficulty</div>
+      </div>
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="users"/></div>
+        <div className="qs-val">{recipe.baseServings}</div>
+        <div className="qs-lbl">Serves</div>
+      </div>
+    </div>
+
+    <div className="stub-card">
+      <div className="stub-icon"><Icon name="sparkles"/></div>
+      <h3>Detailed recipe <em>in development</em></h3>
+      <p>
+        We're still authoring the full ingredient list, step-by-step instructions, and timer-calibrated heat levels for this dish. The shell is here so you can preview the layout and metadata.
+      </p>
+      <div className="stub-tags">
+        <span className="stub-tag warn">⚠ Stub recipe</span>
+        <span className="stub-tag">≈ ₹{recipe.baseCost}</span>
+        <span className="stub-tag">{recipe.nutrition.calories} kcal/serving</span>
+      </div>
+      <div className="stub-actions">
+        <a className="stub-btn primary" href={recipe.youtube} target="_blank" rel="noopener noreferrer">
+          <Icon name="youtube"/> Watch on YouTube while we finish
+        </a>
+        <a className="stub-btn secondary" href="./category.html?cat=non">
+          <Icon name="chevLeft"/> Back to Non-Veg
+        </a>
+      </div>
+    </div>
+
+    <div className="sect">
+      <div className="sect-head">
+        <h3>Try a <em>finished</em> recipe</h3>
+        <span className="aux">6 READY</span>
+      </div>
+    </div>
+    <div style={{padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10}}>
+      {['butter-chicken', 'tandoori', 'tikka-masala', 'honey-wings', 'garlic-prawns', 'pan-salmon']
+        .filter(id => id !== recipe.id)
+        .slice(0, 4)
+        .map(id => {
+          const r = window.GG_RECIPES[id];
+          return (
+            <a key={id} href={`./recipe.html?id=${id}`} style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 14,
+              padding: 12,
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}>
+              <div style={{fontSize: 28, lineHeight: 1}}>{r.emoji}</div>
+              <div style={{fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 500, color: 'var(--text)'}}>{r.title}</div>
+              <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--text-3)'}}>{r.totalMin}m · ₹{Math.round(r.ingredients ? r.ingredients.reduce((s,i)=>s+i.price,0) : recipe.baseCost)}</div>
+            </a>
+          );
+        })}
+    </div>
+  </div>
+);
+
+// === Full Recipe Screen ===
+const FullRecipeScreen = ({ recipe, saved, onToggleSave }) => {
+  const [servings, setServings] = useState(recipe.baseServings);
   const [checked, setChecked] = useState(new Set());
-  const [saved, setSaved] = useState(() => loadSaved().has(RECIPE.id));
 
-  const scale = servings / RECIPE.baseServings;
+  const scale = servings / recipe.baseServings;
 
   const scaledIngredients = useMemo(() => (
-    RECIPE.ingredients.map(ing => ({
+    recipe.ingredients.map(ing => ({
       ...ing,
       qtyScaled: ing.qty * scale,
       priceScaled: ing.price * scale,
     }))
-  ), [scale]);
+  ), [scale, recipe.id]);
 
   const totalCost = useMemo(() => (
     Math.round(scaledIngredients.reduce((sum, i) => sum + i.priceScaled, 0))
@@ -1132,9 +1111,7 @@ const RecipeScreen = () => {
       Spice: '#FF6B35',
     };
     return Object.entries(acc).map(([cat, val]) => ({
-      cat,
-      val: Math.round(val),
-      color: colorMap[cat] || '#888',
+      cat, val: Math.round(val), color: colorMap[cat] || '#888',
     })).sort((a,b) => b.val - a.val);
   }, [scaledIngredients]);
 
@@ -1155,49 +1132,25 @@ const RecipeScreen = () => {
     });
   };
 
-  const toggleSave = () => {
-    const all = loadSaved();
-    if (all.has(RECIPE.id)) all.delete(RECIPE.id); else all.add(RECIPE.id);
-    try { localStorage.setItem('gg-bookmarks', JSON.stringify([...all])); } catch {}
-    setSaved(all.has(RECIPE.id));
-  };
-
-  const n = RECIPE.nutrition;
+  const n = recipe.nutrition;
+  // Generate portion options based on baseServings
+  const portionOpts = recipe.baseServings === 6
+    ? [2, 4, 6, 8]
+    : [1, 2, 4, 6];
 
   return (
     <div className="app-container fade-up">
-      <div className="hero">
-        <div className="hero-bg"/>
-        <div className="hero-grain"/>
-        <div className="hero-nav">
-          <a className="hero-btn" href="./category.html?cat=non"><Icon name="chevLeft"/></a>
-          <div className="hero-btn-group">
-            <button className="hero-btn" onClick={toggleSave} style={saved ? {color: 'var(--amber)'} : {}}>
-              <Icon name={saved ? 'bookmarkFilled' : 'bookmark'} style={saved ? {color: 'var(--amber)'} : {}}/>
-            </button>
-            <div className="hero-btn"><Icon name="share"/></div>
-          </div>
-        </div>
-        <div className="steam-wisp"><SteamWisp/></div>
-        <div className="hero-dish"><DishBowl/></div>
-        <div className="hero-text">
-          <div className="cuisine-chip">
-            <span className="dot"/>{RECIPE.cuisine}
-          </div>
-          <h1 className="hero-title">Butter <em>Chicken</em></h1>
-          <p className="hero-sub">{RECIPE.sub}</p>
-        </div>
-      </div>
+      <Hero recipe={recipe} saved={saved} onToggleSave={onToggleSave}/>
 
       <div className="quick-stats">
         <div className="qs-item">
           <div className="qs-icon"><Icon name="clock"/></div>
-          <div className="qs-val">{RECIPE.totalMin} min</div>
+          <div className="qs-val">{recipe.totalMin} min</div>
           <div className="qs-lbl">Total</div>
         </div>
         <div className="qs-item">
           <div className="qs-icon"><Icon name="chef"/></div>
-          <div className="qs-val">{RECIPE.difficulty}</div>
+          <div className="qs-val">{recipe.difficulty}</div>
           <div className="qs-lbl">Difficulty</div>
         </div>
         <div className="qs-item">
@@ -1213,12 +1166,12 @@ const RecipeScreen = () => {
           <span className="recalc"><span className="pulse"/>Auto-recalc</span>
         </div>
         <div className="portion-toggle">
-          {[1, 2, 4, 6].map(num => (
+          {portionOpts.map(num => (
             <button key={num}
               className={`portion-btn ${servings === num ? 'active' : ''}`}
               onClick={() => setServings(num)}>
               {num}
-              {num === RECIPE.baseServings && <span className="sup">★</span>}
+              {num === recipe.baseServings && <span className="sup">★</span>}
             </button>
           ))}
         </div>
@@ -1273,14 +1226,14 @@ const RecipeScreen = () => {
       <div className="sect">
         <div className="sect-head">
           <h3>Grocery <em>list</em></h3>
-          <span className="aux">{checked.size}/{RECIPE.ingredients.length}</span>
+          <span className="aux">{checked.size}/{recipe.ingredients.length}</span>
         </div>
       </div>
       <div className="grocery">
         <div className="grocery-head">
           <span className="a">Tap to check off</span>
           <span className="b">
-            <span className="checked">{checked.size}</span> / {RECIPE.ingredients.length} packed
+            <span className="checked">{checked.size}</span> / {recipe.ingredients.length} packed
           </span>
         </div>
         {Object.entries(grouped).map(([cat, items]) => (
@@ -1308,19 +1261,61 @@ const RecipeScreen = () => {
       <div className="sect">
         <div className="sect-head">
           <h3>Step-by-step <em>guide</em></h3>
-          <span className="aux">{RECIPE.steps.length} STEPS</span>
+          <span className="aux">{recipe.steps.length} STEPS</span>
         </div>
       </div>
       <div className="steps-wrap">
-        {RECIPE.steps.map(s => <StepCard key={s.n} step={s}/>)}
+        {recipe.steps.map(s => <StepCard key={`${recipe.id}-${s.n}`} step={s}/>)}
       </div>
 
-      <a className="watch-fab" href={RECIPE.youtube} target="_blank" rel="noopener noreferrer">
+      <a className="watch-fab" href={recipe.youtube} target="_blank" rel="noopener noreferrer">
         <div className="yt-icon"><Icon name="youtube"/></div>
         <span className="lbl">Watch Demo</span>
       </a>
     </div>
   );
+};
+
+// === Not Found ===
+const NotFoundScreen = ({ id }) => (
+  <div className="nf-wrap fade-up">
+    <div className="nf-emoji">🤷</div>
+    <h2>Recipe not found</h2>
+    <p>
+      We couldn't find a recipe matching <code style={{fontFamily: 'JetBrains Mono, monospace', color: 'var(--orange)'}}>{id || '(no id)'}</code>.
+      Head back to browse the 18 dishes we do have.
+    </p>
+    <a className="nf-btn" href="./category.html?cat=non">
+      <Icon name="chevLeft"/> Back to Non-Veg
+    </a>
+  </div>
+);
+
+// === Top-level Screen ===
+const RecipeScreen = () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || 'butter-chicken';
+  const recipe = window.GG_GET_RECIPE ? window.GG_GET_RECIPE(id) : null;
+
+  const [saved, setSaved] = useState(() => loadSaved().has(id));
+
+  const toggleSave = () => {
+    const all = loadSaved();
+    if (all.has(id)) all.delete(id); else all.add(id);
+    try { localStorage.setItem('gg-bookmarks', JSON.stringify([...all])); } catch {}
+    setSaved(all.has(id));
+  };
+
+  // Update page title once recipe is known
+  useEffect(() => {
+    if (recipe) {
+      document.title = `${recipe.title} — GustoGrid`;
+    }
+  }, [recipe]);
+
+  if (!recipe) return <NotFoundScreen id={id}/>;
+  if (recipe.isStub) return <StubScreen recipe={recipe} saved={saved} onToggleSave={toggleSave}/>;
+  return <FullRecipeScreen recipe={recipe} saved={saved} onToggleSave={toggleSave}/>;
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
