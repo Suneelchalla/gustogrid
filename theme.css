@@ -319,9 +319,14 @@ button, .tappable {
 }
 
 /* Animation utilities */
+/* IMPORTANT: fade-up must NOT use transform — when applied to
+   .app-container (the tab bar's ancestor), any transform makes
+   the app-container a "containing block" for position:fixed
+   children, so the tab bar becomes fixed relative to the
+   container instead of the viewport. Opacity-only is safe. */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .fade-up {
