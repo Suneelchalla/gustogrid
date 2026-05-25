@@ -1,810 +1,1407 @@
-/**
- * GustoGrid — Recipe Data Layer
- *
- * Exposes `window.GG_RECIPES` as a map keyed by recipe ID.
- * Each recipe has either:
- *   - `isStub: true` + basic metadata + hero info  (12 stubs)
- *   - Full data: ingredients[] + steps[] + nutrition  (6 deep)
- *
- * Pricing is in INR. Ingredient prices reflect approximate metro retail.
- * Recipes are reference-grade — verify timing & quantities for your equipment.
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Recipe — GustoGrid</title>
+<meta name="description" content="A dish with portion-aware ingredients, live timers, and stove heat indicators.">
 
-(function () {
-  'use strict';
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#FF6B35">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GustoGrid">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon.png">
 
-  // Shared YouTube search URL builder
-  const yt = (q) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q + ' recipe restaurant style')}`;
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  // ============================================================
-  // DEEP RECIPES (6)
-  // ============================================================
+<link rel="stylesheet" href="./theme.css">
 
-  const RECIPES = {
+<style>
+  :root {
+    --heat-low: #4DD4FF;
+    --heat-med: #FF6B35;
+    --heat-high: #FF3D5A;
+  }
 
-    // -------------------------------------------------------
-    // 1. BUTTER CHICKEN (anchor recipe)
-    // -------------------------------------------------------
-    'butter-chicken': {
-      id: 'butter-chicken',
-      title: 'Butter Chicken',
-      sub: 'Creamy, smoky, restaurant-style',
-      cuisine: 'Indian · Non-Vegetarian',
-      emoji: '🍛',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #C93D1F 35%, #4D1F1F 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 45,
-      difficulty: 'Medium',
-      youtube: yt('butter chicken'),
-      nutrition: { calories: 480, protein: 32, carbs: 22, fats: 28, fiber: 4 },
-      ingredients: [
-        { id: 1, name: 'Chicken thigh', qty: 500, unit: 'g', price: 180, cat: 'Protein', emoji: '🍗' },
-        { id: 2, name: 'Tomato', qty: 4, unit: '', price: 30, cat: 'Produce', emoji: '🍅' },
-        { id: 3, name: 'Onion', qty: 2, unit: '', price: 15, cat: 'Produce', emoji: '🧅' },
-        { id: 4, name: 'Garlic', qty: 8, unit: 'cloves', price: 10, cat: 'Produce', emoji: '🧄' },
-        { id: 5, name: 'Ginger', qty: 20, unit: 'g', price: 8, cat: 'Produce', emoji: '🫚' },
-        { id: 6, name: 'Butter', qty: 60, unit: 'g', price: 45, cat: 'Dairy', emoji: '🧈' },
-        { id: 7, name: 'Heavy cream', qty: 100, unit: 'ml', price: 60, cat: 'Dairy', emoji: '🥛' },
-        { id: 8, name: 'Yogurt', qty: 100, unit: 'ml', price: 20, cat: 'Dairy', emoji: '🥥' },
-        { id: 9, name: 'Cashews', qty: 30, unit: 'g', price: 25, cat: 'Pantry', emoji: '🥜' },
-        { id: 10, name: 'Garam masala', qty: 2, unit: 'tsp', price: 15, cat: 'Spice', emoji: '🌿' },
-        { id: 11, name: 'Kasuri methi', qty: 1, unit: 'tbsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 12, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-      ],
-      steps: [
-        { n: 1, title: 'Marinate the chicken', secs: 600, heat: 'off',
-          ings: [{ e: '🍗', n: 'Chicken', q: '500g' }, { e: '🥥', n: 'Yogurt', q: '100ml' }, { e: '🌿', n: 'Garam masala', q: '1 tsp' }],
-          desc: 'Cube chicken into 2cm pieces. Whisk yogurt with half the garam masala, salt, a pinch of turmeric. Coat chicken; rest 10 min minimum.' },
-        { n: 2, title: 'Sear on screaming heat', secs: 360, heat: 'high',
-          ings: [{ e: '🍗', n: 'Marinated chicken' }, { e: '🧈', n: 'Butter', q: '20g' }],
-          desc: 'Heat a heavy pan until smoking. Add butter, then chicken in a single layer. Sear undisturbed 90 sec per side until charred edges form. Remove.' },
-        { n: 3, title: 'Bloom the aromatics', secs: 180, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '20g' }, { e: '🧅', n: 'Onion', q: '2' }, { e: '🧄', n: 'Garlic', q: '8' }, { e: '🫚', n: 'Ginger', q: '20g' }],
-          desc: 'Lower flame. Melt butter, add onion, garlic, ginger paste. Stir constantly until golden and aroma blooms — about 3 min.' },
-        { n: 4, title: 'Build the gravy base', secs: 480, heat: 'medium',
-          ings: [{ e: '🍅', n: 'Tomato', q: '4' }, { e: '🥜', n: 'Cashews', q: '30g' }],
-          desc: 'Add chopped tomatoes and soaked cashews. Cook 8 min, mashing as you go, until tomatoes collapse and oil separates at edges.' },
-        { n: 5, title: 'Blend until silky', secs: 120, heat: 'off',
-          ings: [],
-          desc: 'Cool slightly. Transfer to blender, puree until completely smooth. Strain back into pan through a fine mesh for restaurant-grade texture.' },
-        { n: 6, title: 'Simmer with cream', secs: 600, heat: 'low',
-          ings: [{ e: '🥛', n: 'Cream', q: '50ml' }, { e: '🧈', n: 'Butter', q: '20g' }],
-          desc: 'Return puree to low heat. Stir in cream and remaining butter. Simmer gently — never boil — 10 min until glossy and unified.' },
-        { n: 7, title: 'Reunite and finish', secs: 300, heat: 'low',
-          ings: [{ e: '🍗', n: 'Seared chicken' }, { e: '🌿', n: 'Kasuri methi', q: '1 tbsp' }, { e: '🥛', n: 'Cream', q: '50ml' }],
-          desc: 'Slide chicken back into the gravy. Crush kasuri methi between palms over the pan. Final cream swirl. Cover, cook 5 min.' },
-        { n: 8, title: 'Rest and serve', secs: 120, heat: 'off',
-          ings: [{ e: '🍋', n: 'Lemon wedge' }],
-          desc: 'Rest off heat 2 min. Squeeze lemon. Serve hot with naan, basmati, or jeera rice. Reserve a methi crumb for the garnish.' },
-      ],
-    },
+  .app-container { padding-bottom: calc(160px + var(--safe-bottom)); }
 
-    // -------------------------------------------------------
-    // 2. TANDOORI CHICKEN
-    // -------------------------------------------------------
-    'tandoori': {
-      id: 'tandoori',
-      title: 'Tandoori Chicken',
-      sub: 'Yogurt-marinated, char-grilled',
-      cuisine: 'Indian · Non-Vegetarian',
-      emoji: '🍗',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #E8A53D 0%, #C2521F 35%, #5C2818 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 60,
-      difficulty: 'Medium',
-      youtube: yt('tandoori chicken'),
-      nutrition: { calories: 410, protein: 38, carbs: 8, fats: 22, fiber: 2 },
-      ingredients: [
-        { id: 1, name: 'Chicken (bone-in)', qty: 800, unit: 'g', price: 240, cat: 'Protein', emoji: '🍗' },
-        { id: 2, name: 'Hung yogurt', qty: 200, unit: 'ml', price: 40, cat: 'Dairy', emoji: '🥥' },
-        { id: 3, name: 'Ginger-garlic paste', qty: 2, unit: 'tbsp', price: 15, cat: 'Produce', emoji: '🧄' },
-        { id: 4, name: 'Kashmiri chili powder', qty: 2, unit: 'tbsp', price: 15, cat: 'Spice', emoji: '🌶️' },
-        { id: 5, name: 'Garam masala', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 6, name: 'Cumin powder', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌿' },
-        { id: 7, name: 'Coriander powder', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌿' },
-        { id: 8, name: 'Mustard oil', qty: 2, unit: 'tbsp', price: 12, cat: 'Pantry', emoji: '🪔' },
-        { id: 9, name: 'Kasuri methi', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 10, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-        { id: 11, name: 'Onion (sliced)', qty: 1, unit: '', price: 8, cat: 'Produce', emoji: '🧅' },
-        { id: 12, name: 'Butter (basting)', qty: 30, unit: 'g', price: 18, cat: 'Dairy', emoji: '🧈' },
-      ],
-      steps: [
-        { n: 1, title: 'Score the chicken', secs: 180, heat: 'off',
-          ings: [{ e: '🍗', n: 'Chicken', q: '800g' }],
-          desc: 'Pat chicken dry. Make 3-4 deep diagonal slashes across each piece down to the bone — this lets marinade soak in and the meat cook evenly.' },
-        { n: 2, title: 'First marinade — lemon + salt', secs: 900, heat: 'off',
-          ings: [{ e: '🍋', n: 'Lemon', q: '1' }, { e: '🌶️', n: 'Chili powder', q: '1 tbsp' }],
-          desc: 'Rub chicken with lemon juice, salt, and half the Kashmiri chili powder. Massage into the slashes. Rest 15 min at room temp.' },
-        { n: 3, title: 'Build the yogurt marinade', secs: 300, heat: 'off',
-          ings: [{ e: '🥥', n: 'Hung yogurt', q: '200ml' }, { e: '🧄', n: 'Ginger-garlic paste', q: '2 tbsp' }, { e: '🌿', n: 'Garam masala', q: '1 tsp' }, { e: '🪔', n: 'Mustard oil', q: '2 tbsp' }],
-          desc: 'Whisk hung yogurt with ginger-garlic paste, remaining chili powder, cumin, coriander, garam masala, crushed kasuri methi, and mustard oil. Salt to taste.' },
-        { n: 4, title: 'Deep marinate', secs: 1800, heat: 'off',
-          ings: [{ e: '🍗', n: 'Chicken' }],
-          desc: 'Coat chicken thoroughly — work marinade into every slash. Cover and refrigerate 30 min minimum. Overnight is dramatically better.' },
-        { n: 5, title: 'High-heat sear', secs: 600, heat: 'high',
-          ings: [{ e: '🍗', n: 'Marinated chicken' }],
-          desc: 'Preheat oven to 220°C (or grill on max). Place chicken on a rack over a tray. Roast 10 min — you want visible char marks forming.' },
-        { n: 6, title: 'Baste and finish', secs: 480, heat: 'high',
-          ings: [{ e: '🧈', n: 'Butter', q: '30g' }],
-          desc: 'Brush chicken with melted butter and any leftover marinade. Roast another 8 min until juices run clear when pierced at the thickest point.' },
-        { n: 7, title: 'Rest and garnish', secs: 300, heat: 'off',
-          ings: [{ e: '🧅', n: 'Onion rings' }, { e: '🍋', n: 'Lemon wedges' }],
-          desc: 'Rest chicken 5 min off heat — critical for juicy meat. Squeeze lemon over the top. Serve with raw onion rings and mint chutney.' },
-      ],
-    },
+  /* === HERO === */
+  .hero { position: relative; height: 380px; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; }
+  .hero-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='nh'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23nh)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    opacity: 0.8;
+  }
+  .hero-grain {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 0%, transparent 50%, rgba(10,10,11,0.6) 80%, var(--bg) 100%);
+  }
+  .hero-emoji {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    font-size: 140px;
+    line-height: 1;
+    filter: drop-shadow(0 12px 32px rgba(0,0,0,0.5));
+    z-index: 1;
+    animation: hero-float 5s ease-in-out infinite;
+  }
+  @keyframes hero-float {
+    0%, 100% { transform: translate(-50%, -55%); }
+    50% { transform: translate(-50%, -58%); }
+  }
+  .steam-wisp {
+    position: absolute;
+    bottom: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 80px;
+    opacity: 0.5;
+    animation: steam 4s ease-in-out infinite;
+    z-index: 1;
+  }
+  @keyframes steam {
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.4; }
+    50% { transform: translateX(-50%) translateY(-20px); opacity: 0.75; }
+  }
+  .hero-nav {
+    position: absolute;
+    top: calc(20px + var(--safe-top));
+    left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 10;
+  }
+  .hero-btn {
+    width: 40px; height: 40px;
+    background: rgba(10,10,11,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .hero-btn svg { width: 18px; height: 18px; color: var(--text); }
+  .hero-btn-group { display: flex; gap: 8px; }
 
-    // -------------------------------------------------------
-    // 3. CHICKEN TIKKA MASALA
-    // -------------------------------------------------------
-    'tikka-masala': {
-      id: 'tikka-masala',
-      title: 'Chicken Tikka Masala',
-      sub: 'Tomato-cream gravy, charred bites',
-      cuisine: 'Indian · Non-Vegetarian',
-      emoji: '🥘',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #A82E18 35%, #4D1F26 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 50,
-      difficulty: 'Medium',
-      youtube: yt('chicken tikka masala'),
-      nutrition: { calories: 520, protein: 35, carbs: 18, fats: 32, fiber: 3 },
-      ingredients: [
-        { id: 1, name: 'Boneless chicken', qty: 600, unit: 'g', price: 200, cat: 'Protein', emoji: '🍗' },
-        { id: 2, name: 'Yogurt', qty: 100, unit: 'ml', price: 20, cat: 'Dairy', emoji: '🥥' },
-        { id: 3, name: 'Tomato puree', qty: 250, unit: 'ml', price: 40, cat: 'Produce', emoji: '🍅' },
-        { id: 4, name: 'Onion', qty: 2, unit: '', price: 15, cat: 'Produce', emoji: '🧅' },
-        { id: 5, name: 'Ginger-garlic paste', qty: 2, unit: 'tbsp', price: 15, cat: 'Produce', emoji: '🧄' },
-        { id: 6, name: 'Heavy cream', qty: 80, unit: 'ml', price: 50, cat: 'Dairy', emoji: '🥛' },
-        { id: 7, name: 'Butter', qty: 40, unit: 'g', price: 30, cat: 'Dairy', emoji: '🧈' },
-        { id: 8, name: 'Garam masala', qty: 1.5, unit: 'tsp', price: 12, cat: 'Spice', emoji: '🌿' },
-        { id: 9, name: 'Kashmiri chili powder', qty: 1, unit: 'tbsp', price: 10, cat: 'Spice', emoji: '🌶️' },
-        { id: 10, name: 'Cumin powder', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌿' },
-        { id: 11, name: 'Kasuri methi', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 12, name: 'Cashews', qty: 20, unit: 'g', price: 15, cat: 'Pantry', emoji: '🥜' },
-        { id: 13, name: 'Coriander leaves', qty: 2, unit: 'tbsp', price: 5, cat: 'Produce', emoji: '🌿' },
-      ],
-      steps: [
-        { n: 1, title: 'Marinate the tikka', secs: 900, heat: 'off',
-          ings: [{ e: '🍗', n: 'Chicken', q: '600g' }, { e: '🥥', n: 'Yogurt', q: '100ml' }, { e: '🌶️', n: 'Chili powder', q: '1 tsp' }],
-          desc: 'Cube chicken. Mix with yogurt, half the ginger-garlic paste, half the chili powder, half the garam masala, salt. Rest 15 min minimum.' },
-        { n: 2, title: 'Char the tikka', secs: 360, heat: 'high',
-          ings: [{ e: '🍗', n: 'Marinated chicken' }],
-          desc: 'Crank pan to high. Sear chicken in oil — single layer, undisturbed — 3 min per side until edges blacken. Don\'t fully cook through. Set aside.' },
-        { n: 3, title: 'Sweat the aromatics', secs: 240, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '40g' }, { e: '🧅', n: 'Onion', q: '2' }, { e: '🧄', n: 'Ginger-garlic paste' }],
-          desc: 'Same pan, lower heat. Melt butter. Add chopped onions, cook to golden — 3 min. Stir in remaining ginger-garlic paste, cook another minute.' },
-        { n: 4, title: 'Build the masala', secs: 300, heat: 'medium',
-          ings: [{ e: '🍅', n: 'Tomato puree', q: '250ml' }, { e: '🥜', n: 'Cashews', q: '20g' }, { e: '🌿', n: 'Cumin + coriander' }],
-          desc: 'Add tomato puree, remaining chili powder, cumin, cashews. Cook 5 min, stirring often, until raw smell goes and oil separates.' },
-        { n: 5, title: 'Blend smooth', secs: 120, heat: 'off',
-          ings: [],
-          desc: 'Cool slightly. Blend with a splash of water until completely silky. Strain back into the pan through a fine sieve for restaurant texture.' },
-        { n: 6, title: 'Cream simmer', secs: 480, heat: 'low',
-          ings: [{ e: '🥛', n: 'Heavy cream', q: '80ml' }],
-          desc: 'Return strained masala to low heat. Stir in cream. Simmer gently — bubbles should be lazy — for 8 min. Taste, adjust salt.' },
-        { n: 7, title: 'Reunite and finish', secs: 300, heat: 'low',
-          ings: [{ e: '🍗', n: 'Charred chicken' }, { e: '🌿', n: 'Kasuri methi' }, { e: '🌿', n: 'Coriander' }],
-          desc: 'Add the chicken with any resting juices. Crush kasuri methi between palms over the pan. Cover, cook 5 min. Garnish coriander. Serve with naan.' },
-      ],
-    },
+  .hero-text {
+    position: absolute;
+    bottom: 32px;
+    left: 24px;
+    right: 24px;
+    z-index: 2;
+  }
+  .cuisine-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    background: rgba(10,10,11,0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+  .cuisine-chip .dot {
+    width: 5px; height: 5px;
+    background: var(--mint);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--mint);
+  }
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: white;
+    margin: 0 0 6px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  .hero-title em { font-style: italic; }
+  .hero-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
 
-    // -------------------------------------------------------
-    // 4. HONEY GARLIC WINGS
-    // -------------------------------------------------------
-    'honey-wings': {
-      id: 'honey-wings',
-      title: 'Honey Garlic Wings',
-      sub: 'Sticky, glossy, finger-licking',
-      cuisine: 'Asian-American · Non-Vegetarian',
-      emoji: '🍗',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E8A53D 35%, #5C2818 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 30,
-      difficulty: 'Easy',
-      youtube: yt('honey garlic chicken wings'),
-      nutrition: { calories: 380, protein: 26, carbs: 24, fats: 20, fiber: 1 },
-      ingredients: [
-        { id: 1, name: 'Chicken wings', qty: 600, unit: 'g', price: 150, cat: 'Protein', emoji: '🍗' },
-        { id: 2, name: 'Honey', qty: 60, unit: 'ml', price: 35, cat: 'Pantry', emoji: '🍯' },
-        { id: 3, name: 'Soy sauce', qty: 30, unit: 'ml', price: 15, cat: 'Pantry', emoji: '🥢' },
-        { id: 4, name: 'Garlic (minced)', qty: 8, unit: 'cloves', price: 10, cat: 'Produce', emoji: '🧄' },
-        { id: 5, name: 'Ginger (grated)', qty: 15, unit: 'g', price: 6, cat: 'Produce', emoji: '🫚' },
-        { id: 6, name: 'Cornstarch', qty: 2, unit: 'tbsp', price: 8, cat: 'Pantry', emoji: '🌾' },
-        { id: 7, name: 'Sesame oil', qty: 1, unit: 'tsp', price: 8, cat: 'Pantry', emoji: '🪔' },
-        { id: 8, name: 'Red chili flakes', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌶️' },
-        { id: 9, name: 'Sesame seeds', qty: 1, unit: 'tsp', price: 5, cat: 'Pantry', emoji: '🌰' },
-        { id: 10, name: 'Spring onion', qty: 2, unit: '', price: 8, cat: 'Produce', emoji: '🌿' },
-        { id: 11, name: 'Vegetable oil', qty: 200, unit: 'ml', price: 12, cat: 'Pantry', emoji: '🪔' },
-      ],
-      steps: [
-        { n: 1, title: 'Prep and dry the wings', secs: 120, heat: 'off',
-          ings: [{ e: '🍗', n: 'Wings', q: '600g' }],
-          desc: 'Pat wings extremely dry with paper towels. Trim tips if you like. The drier they are, the crispier the fry.' },
-        { n: 2, title: 'Cornstarch coat', secs: 120, heat: 'off',
-          ings: [{ e: '🌾', n: 'Cornstarch', q: '2 tbsp' }],
-          desc: 'Toss wings in a bowl with cornstarch, generous salt, and pepper. Every wing should be lightly dusted — shake off excess.' },
-        { n: 3, title: 'Fry until crisp', secs: 480, heat: 'high',
-          ings: [{ e: '🪔', n: 'Oil', q: '200ml' }],
-          desc: 'Heat oil to 175°C. Fry wings in two batches, 8 min each, until deep golden and crackly. Drain on a rack — not paper, you\'ll lose the crisp.' },
-        { n: 4, title: 'Build the glaze', secs: 180, heat: 'medium',
-          ings: [{ e: '🍯', n: 'Honey', q: '60ml' }, { e: '🥢', n: 'Soy sauce', q: '30ml' }, { e: '🧄', n: 'Garlic + ginger' }, { e: '🌶️', n: 'Chili flakes' }],
-          desc: 'Clean pan. Medium heat. Add sesame oil, then garlic and ginger — 30 sec until fragrant. Pour in honey, soy, chili flakes. Bubble 2 min until syrupy.' },
-        { n: 5, title: 'Toss to coat', secs: 120, heat: 'medium',
-          ings: [{ e: '🍗', n: 'Fried wings' }],
-          desc: 'Tip wings into the glaze. Toss vigorously for a full 2 min — every piece should be slick, glossy, evenly coated.' },
-        { n: 6, title: 'Garnish and serve', secs: 60, heat: 'off',
-          ings: [{ e: '🌰', n: 'Sesame seeds' }, { e: '🌿', n: 'Spring onion' }],
-          desc: 'Off heat. Plate immediately while sticky. Shower with sesame seeds and finely sliced spring onion greens.' },
-      ],
-    },
+  /* Quick stats */
+  .quick-stats {
+    margin: -28px 20px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.6);
+  }
+  .qs-item { text-align: center; position: relative; }
+  .qs-item + .qs-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 4px; bottom: 4px;
+    width: 1px;
+    background: var(--border);
+  }
+  .qs-icon { color: var(--orange); margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; }
+  .qs-icon svg { width: 16px; height: 16px; }
+  .qs-val {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .qs-lbl {
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 
-    // -------------------------------------------------------
-    // 5. GARLIC BUTTER PRAWNS
-    // -------------------------------------------------------
-    'garlic-prawns': {
-      id: 'garlic-prawns',
-      title: 'Garlic Butter Prawns',
-      sub: 'Pan-seared, parsley-flecked',
-      cuisine: 'Mediterranean · Non-Vegetarian',
-      emoji: '🦐',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #4DD4FF 0%, #1F4D5C 35%, #1F2D3D 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 20,
-      difficulty: 'Easy',
-      youtube: yt('garlic butter prawns shrimp'),
-      nutrition: { calories: 320, protein: 28, carbs: 4, fats: 22, fiber: 0 },
-      ingredients: [
-        { id: 1, name: 'Prawns (peeled)', qty: 500, unit: 'g', price: 400, cat: 'Protein', emoji: '🦐' },
-        { id: 2, name: 'Butter', qty: 60, unit: 'g', price: 45, cat: 'Dairy', emoji: '🧈' },
-        { id: 3, name: 'Garlic (minced)', qty: 10, unit: 'cloves', price: 12, cat: 'Produce', emoji: '🧄' },
-        { id: 4, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-        { id: 5, name: 'Parsley', qty: 3, unit: 'tbsp', price: 10, cat: 'Produce', emoji: '🌿' },
-        { id: 6, name: 'Red chili flakes', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌶️' },
-        { id: 7, name: 'Olive oil', qty: 1, unit: 'tbsp', price: 8, cat: 'Pantry', emoji: '🪔' },
-        { id: 8, name: 'Black pepper', qty: 1, unit: 'tsp', price: 5, cat: 'Spice', emoji: '⚫' },
-      ],
-      steps: [
-        { n: 1, title: 'Prep and dry', secs: 180, heat: 'off',
-          ings: [{ e: '🦐', n: 'Prawns', q: '500g' }, { e: '🧄', n: 'Garlic', q: '10 cloves' }],
-          desc: 'Pat prawns extremely dry — wet prawns steam, dry prawns sear. Season with salt and pepper. Mince garlic fine.' },
-        { n: 2, title: 'Bloom garlic in butter', secs: 120, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '30g' }, { e: '🪔', n: 'Olive oil' }, { e: '🌶️', n: 'Chili flakes' }],
-          desc: 'Medium heat. Melt half the butter with olive oil. Add garlic and chili flakes. 90 sec until fragrant — do not let garlic brown.' },
-        { n: 3, title: 'Sear the prawns', secs: 180, heat: 'high',
-          ings: [{ e: '🦐', n: 'Prawns' }],
-          desc: 'Crank to high. Add prawns in a single layer — no overcrowding, work in batches if needed. 90 sec per side until pink and just opaque.' },
-        { n: 4, title: 'Mount with butter', secs: 60, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '30g' }, { e: '🍋', n: 'Lemon' }],
-          desc: 'Lower heat. Add remaining butter, swirl until glossy and emulsified. Squeeze in half the lemon. Taste, season.' },
-        { n: 5, title: 'Plate and garnish', secs: 60, heat: 'off',
-          ings: [{ e: '🌿', n: 'Parsley', q: '3 tbsp' }, { e: '🍋', n: 'Lemon wedge' }],
-          desc: 'Off heat. Plate with all that golden butter. Shower with parsley. Lemon wedge on the side. Serve with crusty bread immediately.' },
-      ],
-    },
+  /* === STUB STATE === */
+  .stub-card {
+    margin: 28px 20px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(255,194,51,0.06), rgba(255,107,53,0.02));
+    border: 1px solid rgba(255,194,51,0.25);
+    border-radius: 22px;
+    text-align: center;
+  }
+  .stub-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    background: linear-gradient(135deg, #FFC233, #E8A53D);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px -8px rgba(255,194,51,0.5);
+  }
+  .stub-icon svg { width: 26px; height: 26px; color: #1a0d05; stroke-width: 2.2; }
+  .stub-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .stub-card h3 em {
+    font-style: italic;
+    background: linear-gradient(135deg, #FFC233, #FF6B35);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stub-card p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-2);
+    margin: 0 0 18px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .stub-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .stub-tag {
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+  }
+  .stub-tag.warn {
+    background: rgba(255,194,51,0.1);
+    border-color: rgba(255,194,51,0.3);
+    color: var(--amber);
+  }
+  .stub-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .stub-btn {
+    padding: 13px 18px;
+    border-radius: 14px;
+    font-family: 'Geist', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s;
+    border: none;
+  }
+  .stub-btn:active { transform: scale(0.97); }
+  .stub-btn.primary {
+    background: linear-gradient(135deg, #FF3D5A, #FF6B35);
+    color: white;
+    box-shadow: 0 8px 20px -8px rgba(255,61,90,0.5);
+  }
+  .stub-btn.secondary {
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    color: var(--text);
+  }
+  .stub-btn svg { width: 14px; height: 14px; }
 
-    // -------------------------------------------------------
-    // 6. PAN-SEARED SALMON
-    // -------------------------------------------------------
-    'pan-salmon': {
-      id: 'pan-salmon',
-      title: 'Pan-Seared Salmon',
-      sub: 'Crispy skin, lemon-dill butter',
-      cuisine: 'Continental · Non-Vegetarian',
-      emoji: '🐟',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #FF8B43 30%, #3D7A8C 70%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 25,
-      difficulty: 'Medium',
-      youtube: yt('pan seared salmon crispy skin'),
-      nutrition: { calories: 420, protein: 36, carbs: 4, fats: 28, fiber: 0 },
-      ingredients: [
-        { id: 1, name: 'Salmon fillet (skin-on)', qty: 600, unit: 'g', price: 500, cat: 'Protein', emoji: '🐟' },
-        { id: 2, name: 'Butter', qty: 40, unit: 'g', price: 30, cat: 'Dairy', emoji: '🧈' },
-        { id: 3, name: 'Garlic', qty: 4, unit: 'cloves', price: 5, cat: 'Produce', emoji: '🧄' },
-        { id: 4, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-        { id: 5, name: 'Fresh dill', qty: 3, unit: 'tbsp', price: 15, cat: 'Produce', emoji: '🌿' },
-        { id: 6, name: 'Olive oil', qty: 2, unit: 'tbsp', price: 12, cat: 'Pantry', emoji: '🪔' },
-        { id: 7, name: 'Capers', qty: 1, unit: 'tbsp', price: 15, cat: 'Pantry', emoji: '🫒' },
-        { id: 8, name: 'Honey', qty: 1, unit: 'tsp', price: 8, cat: 'Pantry', emoji: '🍯' },
-        { id: 9, name: 'Black pepper', qty: 1, unit: 'tsp', price: 5, cat: 'Spice', emoji: '⚫' },
-        { id: 10, name: 'Flaky salt', qty: 1, unit: 'tsp', price: 5, cat: 'Spice', emoji: '🧂' },
-      ],
-      steps: [
-        { n: 1, title: 'Dry and season', secs: 300, heat: 'off',
-          ings: [{ e: '🐟', n: 'Salmon', q: '600g' }, { e: '🧂', n: 'Flaky salt' }],
-          desc: 'Pat fillets aggressively dry with paper towels — wet skin will never crisp. Salt the skin side generously. Rest 5 min, pat dry again.' },
-        { n: 2, title: 'Heat the pan ripping hot', secs: 120, heat: 'high',
-          ings: [{ e: '🪔', n: 'Olive oil', q: '2 tbsp' }],
-          desc: 'Heavy cast-iron or stainless pan — never non-stick for this. Dry heat to smoking. Add olive oil — it should shimmer the instant it hits.' },
-        { n: 3, title: 'Sear skin-side down', secs: 240, heat: 'high',
-          ings: [{ e: '🐟', n: 'Salmon (skin down)' }],
-          desc: 'Place fillets skin-down. Press flat with a spatula for the first 30 sec — prevents curling. Then leave alone. 4 min until skin is deep golden and crisp.' },
-        { n: 4, title: 'Flip and baste', secs: 120, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '40g' }, { e: '🧄', n: 'Garlic', q: '4 cloves' }, { e: '🍋', n: 'Lemon peel' }],
-          desc: 'Flip carefully. Drop in butter, smashed garlic, lemon peel. Tilt pan, spoon foaming butter over the flesh continuously for 2 min.' },
-        { n: 5, title: 'Glaze', secs: 60, heat: 'low',
-          ings: [{ e: '🍯', n: 'Honey', q: '1 tsp' }, { e: '🫒', n: 'Capers', q: '1 tbsp' }],
-          desc: 'Drop heat. Drizzle honey, add capers. Swirl. Internal temp should read 50°C at the thickest point for medium — pull it now, it\'ll climb on the plate.' },
-        { n: 6, title: 'Rest and plate', secs: 120, heat: 'off',
-          ings: [{ e: '🌿', n: 'Dill', q: '3 tbsp' }, { e: '🍋', n: 'Lemon' }],
-          desc: 'Rest 2 min off heat — non-negotiable. Plate skin-side up. Spoon all that butter sauce around (never over the crispy skin). Shower with dill.' },
-      ],
-    },
+  /* === NOT FOUND STATE === */
+  .nf-wrap {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .nf-emoji { font-size: 64px; margin-bottom: 16px; opacity: 0.6; }
+  .nf-wrap h2 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .nf-wrap p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 0 0 24px;
+    max-width: 280px;
+  }
+  .nf-btn {
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    border-radius: 12px;
+    color: #1a0d05;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nf-btn svg { width: 14px; height: 14px; }
 
-    // -------------------------------------------------------
-    // 7. PALAK PANEER (Vegetarian flagship)
-    // -------------------------------------------------------
-    'palak-paneer': {
-      id: 'palak-paneer',
-      title: 'Palak Paneer',
-      sub: 'Cottage cheese in creamed spinach',
-      cuisine: 'Indian · Vegetarian',
-      emoji: '🥬',
-      category: 'veg',
-      subcat: 'Curries',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #3DDC97 0%, #1F7A4E 35%, #0F3D26 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 40,
-      difficulty: 'Medium',
-      youtube: yt('palak paneer'),
-      nutrition: { calories: 340, protein: 18, carbs: 14, fats: 24, fiber: 4 },
-      ingredients: [
-        { id: 1, name: 'Spinach (fresh)', qty: 400, unit: 'g', price: 60, cat: 'Produce', emoji: '🥬' },
-        { id: 2, name: 'Paneer (cubed)', qty: 250, unit: 'g', price: 140, cat: 'Dairy', emoji: '🧀' },
-        { id: 3, name: 'Onion (chopped)', qty: 1, unit: '', price: 8, cat: 'Produce', emoji: '🧅' },
-        { id: 4, name: 'Tomato (chopped)', qty: 2, unit: '', price: 14, cat: 'Produce', emoji: '🍅' },
-        { id: 5, name: 'Ginger-garlic paste', qty: 1, unit: 'tbsp', price: 8, cat: 'Produce', emoji: '🧄' },
-        { id: 6, name: 'Green chili', qty: 2, unit: '', price: 4, cat: 'Produce', emoji: '🌶️' },
-        { id: 7, name: 'Heavy cream', qty: 50, unit: 'ml', price: 35, cat: 'Dairy', emoji: '🥛' },
-        { id: 8, name: 'Butter', qty: 30, unit: 'g', price: 22, cat: 'Dairy', emoji: '🧈' },
-        { id: 9, name: 'Cumin seeds', qty: 1, unit: 'tsp', price: 6, cat: 'Spice', emoji: '🌿' },
-        { id: 10, name: 'Garam masala', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 11, name: 'Kasuri methi', qty: 1, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 12, name: 'Lemon', qty: 1, unit: '', price: 4, cat: 'Produce', emoji: '🍋' },
-      ],
-      steps: [
-        { n: 1, title: 'Blanch the spinach', secs: 300, heat: 'high',
-          ings: [{ e: '🥬', n: 'Spinach', q: '400g' }],
-          desc: 'Bring a large pot of water to a rolling boil. Drop spinach in for exactly 90 seconds — no more, or it turns army-green. Drain and shock immediately in ice water to keep the vivid green.' },
-        { n: 2, title: 'Blend smooth', secs: 120, heat: 'off',
-          ings: [{ e: '🌶️', n: 'Green chili', q: '2' }],
-          desc: 'Squeeze excess water from spinach. Blend with green chilies and a splash of water into a smooth, bright-green puree. Set aside.' },
-        { n: 3, title: 'Sear the paneer', secs: 180, heat: 'high',
-          ings: [{ e: '🧀', n: 'Paneer', q: '250g' }, { e: '🧈', n: 'Butter', q: '15g' }],
-          desc: 'Heat half the butter in a heavy pan on high. Add paneer cubes; sear undisturbed 90 sec per side until golden edges form. Transfer to a bowl of warm salted water — keeps them soft.' },
-        { n: 4, title: 'Bloom aromatics', secs: 240, heat: 'medium',
-          ings: [{ e: '🧈', n: 'Butter', q: '15g' }, { e: '🌿', n: 'Cumin seeds' }, { e: '🧅', n: 'Onion' }, { e: '🧄', n: 'Ginger-garlic paste' }],
-          desc: 'Same pan, lower heat. Melt remaining butter. Crackle cumin seeds 20 sec, then add onions. Cook 3 min until soft and translucent. Stir in ginger-garlic paste, cook 30 sec until raw smell goes.' },
-        { n: 5, title: 'Add tomatoes', secs: 300, heat: 'medium',
-          ings: [{ e: '🍅', n: 'Tomato', q: '2' }, { e: '🌿', n: 'Garam masala' }],
-          desc: 'Add chopped tomatoes and garam masala. Cook 5 min, mashing as you go, until tomatoes collapse into a thick paste and oil starts to separate at the edges.' },
-        { n: 6, title: 'Add the spinach', secs: 360, heat: 'low',
-          ings: [{ e: '🥬', n: 'Spinach puree' }],
-          desc: 'Lower flame. Pour in spinach puree. Stir gently — never boil, or the color dulls. Simmer 6 min, stirring occasionally. Taste, salt as needed.' },
-        { n: 7, title: 'Cream and paneer', secs: 240, heat: 'low',
-          ings: [{ e: '🥛', n: 'Cream', q: '50ml' }, { e: '🧀', n: 'Paneer (drained)' }],
-          desc: 'Drain paneer, slide into the gravy. Stir in cream. Cook 4 min on low — paneer should warm through but stay soft. Don\'t over-stir or you\'ll break the cubes.' },
-        { n: 8, title: 'Finish and rest', secs: 60, heat: 'off',
-          ings: [{ e: '🌿', n: 'Kasuri methi' }, { e: '🍋', n: 'Lemon' }],
-          desc: 'Off heat. Crush kasuri methi between palms over the pan. Squeeze a wedge of lemon. Rest covered 1 minute. Serve hot with naan or jeera rice.' },
-      ],
-    },
+  /* === PORTION MULTIPLIER === */
+  .portion-card {
+    margin: 24px 20px 0;
+    padding: 18px;
+    background: linear-gradient(135deg, rgba(255,107,53,0.06), rgba(255,194,51,0.02));
+    border: 1px solid rgba(255,107,53,0.18);
+    border-radius: 20px;
+  }
+  .portion-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .portion-head .label {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    font-style: italic;
+  }
+  .portion-head .recalc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .portion-head .recalc .pulse {
+    width: 6px; height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--orange);
+    animation: pulse-light 2s ease-in-out infinite;
+  }
+  .portion-toggle {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+  .portion-btn {
+    background: transparent;
+    border: none;
+    padding: 10px;
+    border-radius: 9px;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .portion-btn.active {
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    color: #1a0d05;
+    box-shadow: 0 4px 12px -4px rgba(255,107,53,0.5);
+  }
+  .portion-btn .sup {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    vertical-align: super;
+    margin-left: 2px;
+    opacity: 0.7;
+  }
 
-    // -------------------------------------------------------
-    // 8. SPAGHETTI CARBONARA (Continental flagship)
-    // -------------------------------------------------------
-    'spaghetti-carbonara': {
-      id: 'spaghetti-carbonara',
-      title: 'Spaghetti Carbonara',
-      sub: 'Egg, pancetta, pecorino, pepper',
-      cuisine: 'Italian · Continental',
-      emoji: '🍝',
-      category: 'con',
-      subcat: 'Pasta',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #B26F1F 40%, #4D3D1F 75%, #0A0A0B 100%)',
-      baseServings: 4,
-      totalMin: 25,
-      difficulty: 'Medium',
-      youtube: yt('authentic spaghetti carbonara'),
-      nutrition: { calories: 540, protein: 22, carbs: 58, fats: 22, fiber: 3 },
-      ingredients: [
-        { id: 1, name: 'Spaghetti', qty: 400, unit: 'g', price: 120, cat: 'Pantry', emoji: '🍝' },
-        { id: 2, name: 'Pancetta (or bacon)', qty: 150, unit: 'g', price: 180, cat: 'Protein', emoji: '🥓' },
-        { id: 3, name: 'Egg yolks (large)', qty: 4, unit: '', price: 40, cat: 'Protein', emoji: '🥚' },
-        { id: 4, name: 'Whole egg', qty: 1, unit: '', price: 10, cat: 'Protein', emoji: '🥚' },
-        { id: 5, name: 'Pecorino Romano', qty: 80, unit: 'g', price: 220, cat: 'Dairy', emoji: '🧀' },
-        { id: 6, name: 'Parmigiano-Reggiano', qty: 30, unit: 'g', price: 80, cat: 'Dairy', emoji: '🧀' },
-        { id: 7, name: 'Black peppercorns', qty: 2, unit: 'tsp', price: 12, cat: 'Spice', emoji: '⚫' },
-        { id: 8, name: 'Garlic clove (optional)', qty: 1, unit: '', price: 2, cat: 'Produce', emoji: '🧄' },
-        { id: 9, name: 'Salt (for pasta water)', qty: 2, unit: 'tbsp', price: 4, cat: 'Spice', emoji: '🧂' },
-      ],
-      steps: [
-        { n: 1, title: 'Boil pasta water', secs: 480, heat: 'high',
-          ings: [{ e: '🧂', n: 'Salt', q: '2 tbsp' }],
-          desc: 'Fill a large pot with 4L water. Bring to a rolling boil — takes about 8 min. Salt aggressively — water should taste like sea water. This is your only chance to season the pasta itself.' },
-        { n: 2, title: 'Render the pancetta', secs: 360, heat: 'medium',
-          ings: [{ e: '🥓', n: 'Pancetta', q: '150g' }, { e: '🧄', n: 'Garlic (optional)' }],
-          desc: 'Dice pancetta into 1cm cubes. Cold pan, medium heat. Cook 5-6 min, stirring occasionally, until the fat renders and edges crisp. If using garlic, smash and add for last minute, then discard.' },
-        { n: 3, title: 'Whisk the egg base', secs: 120, heat: 'off',
-          ings: [{ e: '🥚', n: 'Egg yolks + 1 whole egg' }, { e: '🧀', n: 'Pecorino + Parmigiano' }, { e: '⚫', n: 'Black pepper' }],
-          desc: 'In a wide bowl, whisk egg yolks, whole egg, finely grated cheeses, and freshly cracked black pepper until thick and glossy. Critical: do this BEFORE the pasta finishes — it must be ready.' },
-        { n: 4, title: 'Cook the spaghetti', secs: 540, heat: 'high',
-          ings: [{ e: '🍝', n: 'Spaghetti', q: '400g' }],
-          desc: 'Add spaghetti to the boiling salted water. Cook 1 min less than the package says — finish in the pan. Reserve a full cup of starchy pasta water before draining. Don\'t rinse.' },
-        { n: 5, title: 'Combine in pan', secs: 120, heat: 'low',
-          ings: [{ e: '🍝', n: 'Drained spaghetti' }],
-          desc: 'Lower the pancetta pan to LOW heat. Add drained spaghetti, toss for 30 seconds to coat in the rendered fat. Add a splash of pasta water — it should sizzle softly, not violently.' },
-        { n: 6, title: 'Off-heat emulsify', secs: 90, heat: 'off',
-          ings: [{ e: '🥚', n: 'Egg + cheese mixture' }],
-          desc: 'OFF THE HEAT — this is non-negotiable, or you\'ll have scrambled eggs. Pour egg mixture over pasta, tossing constantly with tongs. Add pasta water 1 tbsp at a time until silky. Should coat each strand glossily.' },
-        { n: 7, title: 'Plate and finish', secs: 60, heat: 'off',
-          ings: [{ e: '🧀', n: 'Extra Pecorino' }, { e: '⚫', n: 'More pepper' }],
-          desc: 'Plate immediately into warm bowls. Top with extra grated Pecorino and a generous crack of black pepper. Eat right away — carbonara waits for no one.' },
-      ],
-    },
+  .sect { padding: 0 20px; margin-top: 32px; }
+  .sect-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .sect-head h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin: 0;
+  }
+  .sect-head h3 em { font-style: italic; color: var(--orange); }
+  .sect-head .aux {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+  }
 
-    // -------------------------------------------------------
-    // 9. MANGO LASSI (Drinks flagship)
-    // -------------------------------------------------------
-    'mango-lassi': {
-      id: 'mango-lassi',
-      title: 'Mango Lassi',
-      sub: 'Yogurt-mango blended cooler',
-      cuisine: 'Indian · Beverage',
-      emoji: '🥭',
-      category: 'dri',
-      subcat: 'Shakes',
-      heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E8A53D 35%, #B26F1F 70%, #0A0A0B 100%)',
-      baseServings: 2,
-      totalMin: 5,
-      difficulty: 'Easy',
-      youtube: yt('mango lassi authentic'),
-      nutrition: { calories: 220, protein: 6, carbs: 38, fats: 4, fiber: 2 },
-      ingredients: [
-        { id: 1, name: 'Ripe mango (Alphonso/Kesar)', qty: 1, unit: 'large', price: 80, cat: 'Produce', emoji: '🥭' },
-        { id: 2, name: 'Yogurt (chilled, thick)', qty: 250, unit: 'ml', price: 50, cat: 'Dairy', emoji: '🥥' },
-        { id: 3, name: 'Whole milk (chilled)', qty: 100, unit: 'ml', price: 20, cat: 'Dairy', emoji: '🥛' },
-        { id: 4, name: 'Sugar (or honey)', qty: 2, unit: 'tbsp', price: 6, cat: 'Pantry', emoji: '🍯' },
-        { id: 5, name: 'Green cardamom (powder)', qty: 0.25, unit: 'tsp', price: 8, cat: 'Spice', emoji: '🌿' },
-        { id: 6, name: 'Ice cubes', qty: 6, unit: '', price: 0, cat: 'Pantry', emoji: '🧊' },
-        { id: 7, name: 'Pistachio (garnish)', qty: 1, unit: 'tbsp', price: 12, cat: 'Pantry', emoji: '🥜' },
-        { id: 8, name: 'Saffron (optional)', qty: 4, unit: 'strands', price: 15, cat: 'Spice', emoji: '🌼' },
-      ],
-      steps: [
-        { n: 1, title: 'Prep the mango', secs: 120, heat: 'off',
-          ings: [{ e: '🥭', n: 'Mango' }],
-          desc: 'Peel mango. Slice flesh off the pit in large pieces. Use Alphonso or Kesar if you can find them — their natural sweetness and aroma make the drink. Frozen chunks work too.' },
-        { n: 2, title: 'Bloom the saffron (optional)', secs: 30, heat: 'off',
-          ings: [{ e: '🌼', n: 'Saffron' }, { e: '🥛', n: 'Warm milk', q: '1 tbsp' }],
-          desc: 'If using saffron: warm 1 tbsp of milk slightly and steep saffron strands in it for 30 seconds. This unlocks the color and aroma. Skip if you\'re short on time.' },
-        { n: 3, title: 'Blend until silky', secs: 60, heat: 'off',
-          ings: [{ e: '🥥', n: 'Yogurt' }, { e: '🥛', n: 'Milk' }, { e: '🍯', n: 'Sugar' }, { e: '🌿', n: 'Cardamom' }],
-          desc: 'Add mango, yogurt, cold milk, sugar, cardamom, and ice (plus saffron milk if using) to a blender. Blend 45-60 seconds until completely smooth and frothy. Taste — adjust sugar to your mango.' },
-        { n: 4, title: 'Pour and garnish', secs: 30, heat: 'off',
-          ings: [{ e: '🥜', n: 'Pistachio (slivered)' }],
-          desc: 'Pour into chilled glasses. Top with finely slivered pistachios and a few saffron strands if you have them. Serve immediately while frothy — the texture suffers if it sits.' },
-      ],
-    },
+  /* === NUTRIENT RINGS === */
+  .nutrient-row { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 4px; }
+  .nut-card {
+    flex-shrink: 0;
+    width: 100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 12px 12px;
+    text-align: center;
+  }
+  .nut-ring-wrap { width: 64px; height: 64px; margin: 0 auto 8px; position: relative; }
+  .nut-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
+  .nut-ring-fill {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .nut-ring-val {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .nut-ring-val .v {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text);
+  }
+  .nut-ring-val .u {
+    font-size: 8px;
+    color: var(--text-3);
+    margin-top: 1px;
+    letter-spacing: 0.05em;
+  }
+  .nut-lbl { font-size: 11px; font-weight: 500; color: var(--text-2); margin-bottom: 2px; }
+  .nut-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-3);
+    letter-spacing: 0.05em;
+  }
 
+  /* === COST CARD === */
+  .cost-card { margin: 0 20px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
+  .cost-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+  .cost-left .lbl, .cost-right .lbl {
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .cost-left .val {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1;
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .cost-right { text-align: right; }
+  .cost-right .lbl { font-size: 10px; }
+  .cost-right .val { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; color: var(--text); }
+  .cost-bar { display: flex; height: 8px; border-radius: 100px; overflow: hidden; gap: 2px; margin-bottom: 10px; }
+  .cost-seg { transition: flex 0.4s ease; }
+  .cost-legend { display: flex; flex-wrap: wrap; gap: 12px 14px; }
+  .cost-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
+  .cost-legend-item .swatch { width: 8px; height: 8px; border-radius: 3px; }
+  .cost-legend-item .price { color: var(--text-3); margin-left: 2px; font-family: 'JetBrains Mono', monospace; }
+
+  /* === GROCERY === */
+  .grocery {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .grocery-head {
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .grocery-head .a { font-family: 'Fraunces', serif; font-size: 15px; font-style: italic; color: var(--text); }
+  .grocery-head .b { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); }
+  .grocery-head .b .checked { color: var(--mint); }
+  .grocery-group { padding: 10px 18px; }
+  .group-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 8px 0 6px;
+  }
+  .ing-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .ing-row.checked .ing-info .nm { text-decoration: line-through; opacity: 0.5; }
+  .ing-row.checked .ing-info .qty { opacity: 0.5; }
+  .ing-row.checked .ing-price { opacity: 0.5; }
+  .ing-row.checked .ing-emoji { filter: grayscale(0.6); opacity: 0.7; }
+  .ing-check {
+    width: 22px; height: 22px;
+    border-radius: 7px;
+    border: 1.5px solid var(--border-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .ing-row.checked .ing-check {
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    border-color: transparent;
+  }
+  .ing-check svg {
+    width: 12px; height: 12px;
+    color: #1a0d05;
+    stroke-width: 3;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .ing-row.checked .ing-check svg { opacity: 1; transform: scale(1); }
+  .ing-emoji { font-size: 22px; width: 24px; text-align: center; }
+  .ing-info { flex: 1; min-width: 0; }
+  .ing-info .nm { font-size: 13px; font-weight: 500; color: var(--text); }
+  .ing-info .qty {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+  .ing-info .qty.scaled { color: var(--orange); }
+  .ing-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+
+  /* === COOKING STEPS === */
+  .steps-wrap { margin: 0 20px; display: flex; flex-direction: column; gap: 14px; }
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .step-card.running {
+    border-color: rgba(255,107,53,0.5);
+    box-shadow: 0 0 0 1px rgba(255,107,53,0.15), 0 12px 32px -16px rgba(255,107,53,0.3);
+  }
+  .step-card.done { opacity: 0.7; }
+  .step-head { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .step-card.running .step-num { background: linear-gradient(135deg, #FF6B35, #FFC233); color: #1a0d05; border-color: transparent; }
+  .step-card.done .step-num { background: linear-gradient(135deg, #3DDC97, #1F9E6E); color: #052a1c; border-color: transparent; }
+  .step-meta { flex: 1; min-width: 0; }
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 4px;
+    line-height: 1.2;
+  }
+
+  .heat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .heat-badge.low {
+    background: linear-gradient(135deg, rgba(77,212,255,0.18), rgba(255,194,51,0.12));
+    color: var(--heat-low);
+    border: 1px solid rgba(77,212,255,0.3);
+  }
+  .heat-badge.med {
+    background: rgba(255,107,53,0.15);
+    color: var(--orange);
+    border: 1px solid rgba(255,107,53,0.35);
+  }
+  .heat-badge.high {
+    background: rgba(255,61,90,0.18);
+    color: var(--crimson);
+    border: 1px solid rgba(255,61,90,0.4);
+    box-shadow: 0 0 10px -4px rgba(255,61,90,0.6);
+  }
+  .heat-badge.off {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border: 1px solid var(--border);
+  }
+  .heat-flames { display: inline-flex; gap: 1px; margin-right: 1px; }
+
+  .step-body { padding: 0 16px 14px; }
+  .step-desc { font-size: 13px; line-height: 1.55; color: var(--text-2); margin: 0 0 12px; }
+  .step-ing-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .step-ing-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--text-2);
+  }
+  .step-ing-chip .ic-emoji { font-size: 12px; }
+  .step-ing-chip .ic-qty { font-family: 'JetBrains Mono', monospace; color: var(--text-3); margin-left: 2px; }
+
+  .step-timer {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.3s;
+  }
+  .step-card.running .step-timer {
+    background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,194,51,0.04));
+    border-color: rgba(255,107,53,0.3);
+  }
+  .step-card.done .step-timer {
+    background: linear-gradient(135deg, rgba(61,220,151,0.08), rgba(61,220,151,0.03));
+    border-color: rgba(61,220,151,0.3);
+  }
+  .timer-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .step-card.running .timer-display { color: var(--orange); }
+  .step-card.done .timer-display { color: var(--mint); }
+  .timer-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #FF6B35, #FFC233);
+    border-radius: 100px;
+    transition: width 1s linear;
+  }
+  .step-card.done .timer-bar { background: linear-gradient(90deg, #3DDC97, #1F9E6E); }
+  .timer-controls { display: flex; gap: 6px; }
+  .timer-btn {
+    width: 34px;
+    height: 34px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .timer-btn.primary { background: linear-gradient(135deg, #FF6B35, #FFC233); border-color: transparent; }
+  .timer-btn.primary svg { color: #1a0d05; }
+  .timer-btn svg { width: 14px; height: 14px; color: var(--text); stroke-width: 2.2; }
+
+  /* Watch Demo FAB */
+  .watch-fab {
+    position: fixed;
+    right: calc(18px + (100vw - min(480px, 100vw)) / 2);
+    bottom: calc(100px + var(--safe-bottom));
+    background: linear-gradient(135deg, #FF3D5A, #FF6B35);
+    border-radius: 100px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 30;
+    cursor: pointer;
+    box-shadow:
+      0 12px 28px -8px rgba(255,61,90,0.55),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+    text-decoration: none;
+    animation: fab-bob 4s ease-in-out infinite;
+  }
+  @keyframes fab-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .watch-fab .yt-icon {
+    width: 30px; height: 30px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .watch-fab .yt-icon svg { width: 14px; height: 14px; color: #FF3D5A; fill: currentColor; }
+  .watch-fab .lbl {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="app-loading" class="app-loading">
+  <div class="app-loading-mark">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none">
+      <path d="M4 6h11M4 12h7M4 18h11" stroke="#1a0d05" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 4 L22 4 L20 13 L20 20 Q20 21 19 21 Q18 21 18 20 L18 13 Z" fill="#1a0d05"/>
+    </svg>
+  </div>
+  <div class="app-loading-text">GustoGrid</div>
+  <div class="app-loading-sub">Plating the recipe…</div>
+</div>
+
+<div id="root"></div>
+
+<!-- Recipe data layer (must load before React script) -->
+<script src="./data/recipes.js"></script>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+
+const Icon = ({ name, ...props }) => {
+  const paths = {
+    chevLeft: <><path d="m15 18-6-6 6-6"/></>,
+    bookmark: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></>,
+    bookmarkFilled: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/></>,
+    share: <><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></>,
+    play: <><polygon points="6 3 20 12 6 21 6 3"/></>,
+    pause: <><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></>,
+    rotate: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></>,
+    check: <><polyline points="20 6 9 17 4 12"/></>,
+    flame: <><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></>,
+    clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    chef: <><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/></>,
+    users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    youtube: <><polygon points="9.5 7.5 9.5 16.5 16 12"/></>,
+    sparkles: <><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></>,
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    fridge: <><path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 10h14"/><path d="M15 7v6"/><path d="M9 7v6"/></>,
+    book: <><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></>,
+    user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+  };
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {paths[name]}
+    </svg>
+  );
+};
+
+const SteamWisp = () => (
+  <svg viewBox="0 0 60 80" fill="none">
+    <path d="M 30 75 Q 20 60, 30 45 Q 40 30, 30 15 Q 22 5, 30 0" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    <path d="M 20 70 Q 12 55, 20 40 Q 28 25, 20 10" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    <path d="M 40 70 Q 48 55, 40 40 Q 32 25, 40 10" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+  </svg>
+);
+
+// Recipe is "deep" inside the Home tab's nav hierarchy, so Home stays the active tab.
+const TabBar = () => (
+  <nav className="tabbar">
+    <a className="tab active" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
+    <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
+    <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+    <a className="tab" href="./creations.html"><Icon name="book"/><span className="tab-lbl">Create</span></a>
+    <a className="tab" href="./profile.html"><Icon name="user"/><span className="tab-lbl">Profile</span></a>
+  </nav>
+);
+
+// === Helpers ===
+const formatQty = (n) => {
+  if (n === 0) return '0';
+  if (n < 1) {
+    if (Math.abs(n - 0.25) < 0.01) return '¼';
+    if (Math.abs(n - 0.5) < 0.01) return '½';
+    if (Math.abs(n - 0.75) < 0.01) return '¾';
+    if (Math.abs(n - 0.125) < 0.01) return '⅛';
+    if (Math.abs(n - 0.333) < 0.05) return '⅓';
+    if (Math.abs(n - 0.667) < 0.05) return '⅔';
+    return n.toFixed(2).replace(/\.?0+$/, '');
+  }
+  if (n < 10) return n.toFixed(1).replace(/\.0$/, '');
+  return Math.round(n).toString();
+};
+const formatTime = (s) => {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+};
+
+const loadSaved = () => {
+  try {
+    const raw = localStorage.getItem('gg-bookmarks');
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+};
+
+// === Nutrient Ring ===
+const NutrientRing = ({ value, max, label, unit, color, pct }) => {
+  const radius = 26;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.min(value / max, 1)) * circumference;
+  return (
+    <div className="nut-card">
+      <div className="nut-ring-wrap">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle cx="32" cy="32" r={radius} className="nut-ring-track"/>
+          <circle cx="32" cy="32" r={radius} className="nut-ring-fill"
+            style={{
+              stroke: color,
+              strokeDasharray: circumference,
+              strokeDashoffset: offset,
+              filter: `drop-shadow(0 0 4px ${color}55)`
+            }}/>
+        </svg>
+        <div className="nut-ring-val">
+          <span className="v">{Math.round(value)}</span>
+          <span className="u">{unit}</span>
+        </div>
+      </div>
+      <div className="nut-lbl">{label}</div>
+      <div className="nut-pct">{pct}% RDA</div>
+    </div>
+  );
+};
+
+const HeatBadge = ({ level }) => {
+  const config = {
+    off: { label: 'Off heat', flames: 0 },
+    low: { label: 'Low', flames: 1 },
+    medium: { label: 'Medium', flames: 2 },
+    high: { label: 'High', flames: 3 },
+  };
+  const c = config[level];
+  const cls = level === 'medium' ? 'med' : level;
+  return (
+    <span className={`heat-badge ${cls}`}>
+      {c.flames > 0 && (
+        <span className="heat-flames">
+          {Array.from({length: c.flames}).map((_, i) => (
+            <Icon key={i} name="flame" width="9" height="9"/>
+          ))}
+        </span>
+      )}
+      {c.label}
+    </span>
+  );
+};
+
+const StepCard = ({ step }) => {
+  const [secs, setSecs] = useState(step.secs);
+  const [running, setRunning] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!running || secs <= 0) return;
+    const id = setInterval(() => {
+      setSecs(s => {
+        if (s <= 1) { setRunning(false); setDone(true); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [running, secs]);
+
+  const stateCls = done ? 'done' : running ? 'running' : '';
+  const pct = ((step.secs - secs) / step.secs) * 100;
+
+  const onPlayPause = () => {
+    if (done) { setSecs(step.secs); setDone(false); setRunning(true); }
+    else { setRunning(r => !r); }
+  };
+  const onReset = () => { setSecs(step.secs); setRunning(false); setDone(false); };
+
+  return (
+    <div className={`step-card ${stateCls}`}>
+      <div className="step-head">
+        <div className="step-num">{step.n}</div>
+        <div className="step-meta">
+          <h4 className="step-title">{step.title}</h4>
+          <HeatBadge level={step.heat}/>
+        </div>
+      </div>
+      <div className="step-body">
+        <p className="step-desc">{step.desc}</p>
+        {step.ings.length > 0 && (
+          <div className="step-ing-row">
+            {step.ings.map((ing, i) => (
+              <div key={i} className="step-ing-chip">
+                <span className="ic-emoji">{ing.e}</span>
+                <span>{ing.n}</span>
+                {ing.q && <span className="ic-qty">{ing.q}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="step-timer">
+          <div className="timer-display">{formatTime(secs)}</div>
+          <div className="timer-bar-wrap">
+            <div className="timer-bar" style={{width: `${pct}%`}}/>
+          </div>
+          <div className="timer-controls">
+            <button className="timer-btn primary" onClick={onPlayPause}>
+              <Icon name={running ? 'pause' : 'play'}/>
+            </button>
+            <button className="timer-btn" onClick={onReset}>
+              <Icon name="rotate"/>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// === Hero (shared by full + stub) ===
+const Hero = ({ recipe, saved, onToggleSave }) => {
+  const [shareToast, setShareToast] = useState('');
+
+  const onShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: `${recipe.title} — GustoGrid`,
+      text: `${recipe.title} — ${recipe.sub}`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setShareToast('Link copied');
+        setTimeout(() => setShareToast(''), 1800);
+      } else {
+        setShareToast('Sharing not supported');
+        setTimeout(() => setShareToast(''), 1800);
+      }
+    } catch (err) {
+      // User cancelled or share failed — silent
+    }
   };
 
-  // ============================================================
-  // STUB RECIPES — 12 Non-Veg (deep recipes above carry no
-  // category field; we default missing category to 'non').
-  // ============================================================
+  return (
+  <div className="hero">
+    <div className="hero-bg" style={{background: recipe.heroGradient}}/>
+    <div className="hero-grain"/>
+    <div className="hero-nav">
+      <a className="hero-btn" href={`./category.html?cat=${recipe.category || 'non'}`}><Icon name="chevLeft"/></a>
+      <div className="hero-btn-group">
+        <button className="hero-btn" onClick={onToggleSave} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
+          <Icon name={saved ? 'bookmarkFilled' : 'bookmark'} style={saved ? {color: 'var(--amber)'} : {}}/>
+        </button>
+        <button className="hero-btn" onClick={onShare} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
+          <Icon name="share"/>
+        </button>
+      </div>
+    </div>
+    {shareToast && (
+      <div style={{
+        position: 'absolute',
+        top: 'calc(80px + var(--safe-top))',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(10,10,11,0.95)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        color: 'var(--mint)',
+        padding: '8px 16px',
+        borderRadius: '100px',
+        fontSize: '12px',
+        fontWeight: 500,
+        zIndex: 20,
+        border: '1px solid rgba(61,220,151,0.3)',
+        animation: 'fade-up 0.3s ease',
+      }}>{shareToast}</div>
+    )}
+    <div className="steam-wisp"><SteamWisp/></div>
+    <div className="hero-emoji">{recipe.emoji}</div>
+    <div className="hero-text">
+      <div className="cuisine-chip">
+        <span className="dot"/>{recipe.cuisine}
+      </div>
+      <h1 className="hero-title">{recipe.title}</h1>
+      <p className="hero-sub">{recipe.sub}</p>
+    </div>
+  </div>
+  );
+};
 
-  const NON_STUBS = [
-    { id: 'coq-vin', title: 'Coq au Vin', sub: 'French chicken braised in red wine', cuisine: 'French · Non-Vegetarian', emoji: '🍷', baseServings: 4, totalMin: 90, difficulty: 'Hard', baseCost: 540, nutrition: { calories: 580, protein: 38, carbs: 12, fats: 32, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #6B1F2D 0%, #4D1A26 40%, #2D1A1A 75%, #0A0A0B 100%)' },
-    { id: 'lemon-pepper', title: 'Lemon Pepper Chicken', sub: 'Zesty pan-fried thighs', cuisine: 'American · Non-Vegetarian', emoji: '🍋', baseServings: 4, totalMin: 25, difficulty: 'Easy', baseCost: 220, nutrition: { calories: 340, protein: 32, carbs: 6, fats: 18, fiber: 1 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E8A53D 35%, #5C3818 75%, #0A0A0B 100%)' },
-    { id: 'goan-fish', title: 'Goan Fish Curry', sub: 'Coconut-tamarind, kingfish', cuisine: 'Indian · Non-Vegetarian', emoji: '🐠', baseServings: 4, totalMin: 40, difficulty: 'Medium', baseCost: 460, nutrition: { calories: 380, protein: 30, carbs: 14, fats: 22, fiber: 3 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #C2521F 35%, #2A1F4D 75%, #0A0A0B 100%)' },
-    { id: 'shrimp-padthai', title: 'Shrimp Pad Thai', sub: 'Wok-tossed rice noodles, tamarind', cuisine: 'Thai · Non-Vegetarian', emoji: '🍜', baseServings: 4, totalMin: 30, difficulty: 'Medium', baseCost: 380, nutrition: { calories: 510, protein: 24, carbs: 62, fats: 18, fiber: 3 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #E8A53D 0%, #C97A3D 35%, #3D5A4D 75%, #0A0A0B 100%)' },
-    { id: 'tuna-tartare', title: 'Tuna Tartare', sub: 'Sushi-grade, avocado, soy-lime', cuisine: 'Japanese-Continental · Non-Vegetarian', emoji: '🍣', baseServings: 4, totalMin: 15, difficulty: 'Hard', baseCost: 720, nutrition: { calories: 290, protein: 28, carbs: 8, fats: 16, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6FB5 0%, #B97BFF 30%, #2A1F4D 75%, #0A0A0B 100%)' },
-    { id: 'wellington', title: 'Beef Wellington', sub: 'Tenderloin, mushroom duxelles, puff pastry', cuisine: 'British · Non-Vegetarian', emoji: '🥩', baseServings: 6, totalMin: 150, difficulty: 'Hard', baseCost: 1200, nutrition: { calories: 720, protein: 42, carbs: 24, fats: 48, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #8C2A35 0%, #5C1F26 40%, #2D1A1A 75%, #0A0A0B 100%)' },
-    { id: 'rogan-josh', title: 'Lamb Rogan Josh', sub: 'Kashmiri spices, slow-braised lamb', cuisine: 'Indian · Non-Vegetarian', emoji: '🍖', baseServings: 4, totalMin: 120, difficulty: 'Medium', baseCost: 680, nutrition: { calories: 590, protein: 38, carbs: 14, fats: 38, fiber: 3 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #C92A47 0%, #8C2A35 35%, #4D1F26 75%, #0A0A0B 100%)' },
-    { id: 'pork-bao', title: 'Pork Belly Bao', sub: 'Pillowy buns, glazed five-spice belly', cuisine: 'Chinese · Non-Vegetarian', emoji: '🥟', baseServings: 4, totalMin: 80, difficulty: 'Hard', baseCost: 520, nutrition: { calories: 480, protein: 22, carbs: 38, fats: 28, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #B97BFF 0%, #6B3D8C 35%, #2A1F2D 75%, #0A0A0B 100%)' },
-    { id: 'bourguignon', title: 'Beef Bourguignon', sub: 'Burgundy-stewed, pearl onions', cuisine: 'French · Non-Vegetarian', emoji: '🍲', baseServings: 6, totalMin: 180, difficulty: 'Hard', baseCost: 780, nutrition: { calories: 640, protein: 40, carbs: 18, fats: 38, fiber: 3 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #6B1F2D 0%, #4D1A22 40%, #2D1A1A 75%, #0A0A0B 100%)' },
-    { id: 'lamb-shank', title: 'Slow Lamb Shank', sub: 'Fall-off-the-bone, rosemary jus', cuisine: 'Mediterranean · Non-Vegetarian', emoji: '🍖', baseServings: 4, totalMin: 240, difficulty: 'Medium', baseCost: 720, nutrition: { calories: 610, protein: 44, carbs: 8, fats: 40, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #C2521F 0%, #6B2A1F 40%, #3D1F26 75%, #0A0A0B 100%)' },
-    { id: 'chicken-65', title: 'Chicken 65', sub: 'Curry leaf, fiery red, crispy', cuisine: 'Indian · Non-Vegetarian', emoji: '🌶️', baseServings: 4, totalMin: 35, difficulty: 'Medium', baseCost: 280, nutrition: { calories: 360, protein: 28, carbs: 14, fats: 20, fiber: 2 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF3D5A 0%, #C2521F 35%, #5C2818 75%, #0A0A0B 100%)' },
-    { id: 'fish-fingers', title: 'Crispy Fish Fingers', sub: 'Panko-crusted, tartare dip', cuisine: 'British · Non-Vegetarian', emoji: '🐟', baseServings: 4, totalMin: 25, difficulty: 'Easy', baseCost: 240, nutrition: { calories: 310, protein: 22, carbs: 22, fats: 14, fiber: 1 }, heroGradient: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E8A53D 35%, #4D421F 75%, #0A0A0B 100%)' },
-  ];
+// === Stub State ===
+const StubScreen = ({ recipe, saved, onToggleSave }) => (
+  <div className="app-container fade-up">
+    <Hero recipe={recipe} saved={saved} onToggleSave={onToggleSave}/>
 
-  // Flatten Non-Veg stubs
-  NON_STUBS.forEach(s => {
-    RECIPES[s.id] = { ...s, category: 'non', isStub: true, youtube: yt(s.title) };
-  });
+    <div className="quick-stats">
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="clock"/></div>
+        <div className="qs-val">{recipe.totalMin} min</div>
+        <div className="qs-lbl">Total</div>
+      </div>
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="chef"/></div>
+        <div className="qs-val">{recipe.difficulty}</div>
+        <div className="qs-lbl">Difficulty</div>
+      </div>
+      <div className="qs-item">
+        <div className="qs-icon"><Icon name="users"/></div>
+        <div className="qs-val">{recipe.baseServings}</div>
+        <div className="qs-lbl">Serves</div>
+      </div>
+    </div>
 
-  // ============================================================
-  // SCAFFOLDED STUBS — 6 categories × 35 dishes = 210
-  // Each stub renders the "Detailed recipe in development" screen.
-  // Compact tuple format: [id, title, sub, subcat, emoji, totalMin,
-  //                        difficulty, baseCost, cal, prot, carb, fat, fib]
-  // ============================================================
+    <div className="stub-card">
+      <div className="stub-icon"><Icon name="sparkles"/></div>
+      <h3>Detailed recipe <em>in development</em></h3>
+      <p>
+        We're still authoring the full ingredient list, step-by-step instructions, and timer-calibrated heat levels for this dish. The shell is here so you can preview the layout and metadata.
+      </p>
+      <div className="stub-tags">
+        <span className="stub-tag warn">⚠ Stub recipe</span>
+        <span className="stub-tag">≈ ₹{recipe.baseCost}</span>
+        <span className="stub-tag">{recipe.nutrition.calories} kcal/serving</span>
+      </div>
+      <div className="stub-actions">
+        <a className="stub-btn primary" href={recipe.youtube} target="_blank" rel="noopener noreferrer">
+          <Icon name="youtube"/> Watch on YouTube while we finish
+        </a>
+        <a className="stub-btn secondary" href={`./category.html?cat=${recipe.category || 'non'}`}>
+          <Icon name="chevLeft"/> Back to browse
+        </a>
+      </div>
+    </div>
 
-  const CAT_HERO = {
-    veg: 'radial-gradient(ellipse 80% 60% at 50% 60%, #3DDC97 0%, #1F7A4E 40%, #0F3D26 75%, #0A0A0B 100%)',
-    con: 'radial-gradient(ellipse 80% 60% at 50% 60%, #E8A53D 0%, #B26F1F 40%, #4D3D1F 75%, #0A0A0B 100%)',
-    chi: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6B35 0%, #C2521F 40%, #4D1F1F 75%, #0A0A0B 100%)',
-    des: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FF6FB5 0%, #B97BFF 35%, #3D1F4D 75%, #0A0A0B 100%)',
-    sna: 'radial-gradient(ellipse 80% 60% at 50% 60%, #FFC233 0%, #E89A1F 40%, #4D421F 75%, #0A0A0B 100%)',
-    dri: 'radial-gradient(ellipse 80% 60% at 50% 60%, #4DD4FF 0%, #1F8FB2 40%, #1F3D4D 75%, #0A0A0B 100%)',
-  };
+    <div className="sect">
+      <div className="sect-head">
+        <h3>Try a <em>finished</em> recipe</h3>
+        <span className="aux">6 READY</span>
+      </div>
+    </div>
+    <div style={{padding: '0 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10}}>
+      {['butter-chicken', 'tandoori', 'tikka-masala', 'honey-wings', 'garlic-prawns', 'pan-salmon']
+        .filter(id => id !== recipe.id)
+        .slice(0, 4)
+        .map(id => {
+          const r = window.GG_RECIPES[id];
+          return (
+            <a key={id} href={`./recipe.html?id=${id}`} style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 14,
+              padding: 12,
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}>
+              <div style={{fontSize: 28, lineHeight: 1}}>{r.emoji}</div>
+              <div style={{fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 500, color: 'var(--text)'}}>{r.title}</div>
+              <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--text-3)'}}>{r.totalMin}m · ₹{Math.round(r.ingredients ? r.ingredients.reduce((s,i)=>s+i.price,0) : recipe.baseCost)}</div>
+            </a>
+          );
+        })}
+    </div>
+    <TabBar/>
+  </div>
+);
 
-  const CAT_CUISINE = {
-    veg: 'Indian · Vegetarian',
-    con: 'European · Continental',
-    chi: 'Chinese · Indo-Chinese',
-    des: 'Dessert',
-    sna: 'Snack · Street Food',
-    dri: 'Beverage',
-  };
+// === Full Recipe Screen ===
+const FullRecipeScreen = ({ recipe, saved, onToggleSave }) => {
+  const [servings, setServings] = useState(recipe.baseServings);
+  const [checked, setChecked] = useState(new Set());
 
-  const STUBS_BY_CAT = {
-    // ---------- VEGETARIAN (35) — Indian-focused ----------
-    veg: [
-      ['paneer-tikka', 'Paneer Tikka', 'Tandoor-grilled cottage cheese cubes', 'Starters', '🧀', 35, 'Medium', 260, 320, 18, 12, 22, 3],
-      ['aloo-gobi', 'Aloo Gobi', 'Potato-cauliflower stir-fry with cumin', 'Mains', '🥔', 30, 'Easy', 160, 220, 6, 32, 8, 5],
-      ['chana-masala', 'Chana Masala', 'Chickpea curry with onion-tomato base', 'Curries', '🫘', 45, 'Medium', 180, 320, 14, 42, 8, 8],
-      ['dal-makhani', 'Dal Makhani', 'Slow-cooked black lentils with cream', 'Curries', '🫘', 90, 'Medium', 240, 380, 16, 32, 18, 8],
-      ['dal-tadka', 'Dal Tadka', 'Yellow lentils with cumin tempering', 'Curries', '🫘', 30, 'Easy', 140, 240, 14, 28, 6, 6],
-      ['rajma', 'Rajma', 'Punjabi kidney bean curry', 'Curries', '🫘', 60, 'Medium', 180, 340, 16, 38, 10, 10],
-      ['bhindi-masala', 'Bhindi Masala', 'Stir-fried okra with onions and spice', 'Mains', '🌶️', 30, 'Easy', 160, 180, 4, 16, 10, 4],
-      ['baingan-bharta', 'Baingan Bharta', 'Smoke-roasted eggplant mash', 'Mains', '🍆', 45, 'Medium', 140, 220, 4, 14, 14, 6],
-      ['malai-kofta', 'Malai Kofta', 'Paneer dumplings in creamy gravy', 'Curries', '🍡', 60, 'Hard', 320, 480, 16, 32, 30, 4],
-      ['veg-biryani', 'Vegetable Biryani', 'Fragrant layered rice with vegetables', 'Rice', '🍚', 75, 'Hard', 260, 420, 10, 64, 12, 6],
-      ['jeera-rice', 'Jeera Rice', 'Basmati rice with cumin tempering', 'Rice', '🍚', 25, 'Easy', 100, 280, 6, 52, 6, 2],
-      ['aloo-paratha', 'Aloo Paratha', 'Stuffed potato flatbread', 'Breads', '🥖', 45, 'Medium', 140, 320, 8, 48, 10, 4],
-      ['methi-thepla', 'Methi Thepla', 'Fenugreek-laced flatbread', 'Breads', '🥖', 30, 'Easy', 120, 240, 6, 32, 8, 4],
-      ['plain-naan', 'Plain Naan', 'Tandoor-baked leavened bread', 'Breads', '🫓', 90, 'Medium', 100, 260, 8, 44, 6, 2],
-      ['garlic-naan', 'Garlic Naan', 'Garlic-studded tandoor bread', 'Breads', '🫓', 90, 'Medium', 120, 280, 8, 44, 8, 2],
-      ['aloo-tikki', 'Aloo Tikki', 'Pan-fried spiced potato patties', 'Starters', '🥔', 25, 'Easy', 100, 240, 4, 38, 8, 4],
-      ['samosa', 'Samosa', 'Fried pastry with spiced potato filling', 'Starters', '🥟', 60, 'Medium', 140, 280, 6, 36, 12, 4],
-      ['veg-pakora', 'Vegetable Pakora', 'Chickpea-battered vegetable fritters', 'Starters', '🧅', 25, 'Easy', 120, 260, 8, 28, 14, 4],
-      ['pav-bhaji', 'Pav Bhaji', 'Spiced vegetable mash with buttered buns', 'Mains', '🍔', 45, 'Medium', 180, 420, 12, 56, 16, 8],
-      ['masala-dosa', 'Masala Dosa', 'Fermented rice crepe with potato filling', 'Mains', '🥞', 60, 'Hard', 160, 380, 10, 60, 10, 5],
-      ['idli-sambar', 'Idli Sambar', 'Steamed rice cakes with lentil stew', 'Mains', '🍙', 60, 'Medium', 140, 260, 10, 48, 4, 6],
-      ['rava-upma', 'Rava Upma', 'Semolina savory porridge', 'Mains', '🍲', 25, 'Easy', 100, 240, 8, 36, 8, 3],
-      ['veg-pulao', 'Vegetable Pulao', 'One-pot spiced rice with vegetables', 'Rice', '🍚', 40, 'Easy', 160, 320, 8, 54, 8, 4],
-      ['mushroom-masala', 'Mushroom Masala', 'Sautéed mushrooms in spiced gravy', 'Mains', '🍄', 35, 'Medium', 220, 280, 10, 18, 18, 4],
-      ['mutter-paneer', 'Mutter Paneer', 'Peas and paneer in tomato gravy', 'Curries', '🫛', 40, 'Medium', 260, 360, 16, 22, 22, 6],
-      ['kadai-paneer', 'Kadai Paneer', 'Wok-tossed paneer with bell peppers', 'Curries', '🌶️', 40, 'Medium', 280, 380, 18, 18, 26, 4],
-      ['aloo-methi', 'Aloo Methi', 'Potatoes with fenugreek leaves', 'Mains', '🥔', 30, 'Easy', 160, 240, 6, 32, 10, 6],
-      ['bhel-puri', 'Bhel Puri', 'Puffed rice chaat with tamarind', 'Starters', '🍚', 20, 'Easy', 80, 220, 6, 38, 6, 4],
-      ['pani-puri', 'Pani Puri', 'Crispy shells with tangy spiced water', 'Starters', '🥟', 45, 'Medium', 100, 260, 6, 42, 8, 5],
-      ['veg-korma', 'Vegetable Korma', 'Coconut-cashew vegetable curry', 'Curries', '🥥', 50, 'Medium', 260, 420, 10, 28, 30, 5],
-      ['stuffed-capsicum', 'Stuffed Capsicum', 'Bell peppers with spiced potato', 'Mains', '🫑', 50, 'Medium', 200, 280, 8, 38, 10, 6],
-      ['lauki-kofta', 'Lauki Kofta', 'Bottle gourd dumplings in curry', 'Curries', '🥒', 70, 'Hard', 220, 320, 10, 30, 18, 5],
-      ['sarson-saag', 'Sarson Ka Saag', 'Punjabi mustard greens stew', 'Curries', '🥬', 90, 'Medium', 180, 260, 10, 18, 16, 8],
-      ['mixed-veg', 'Mixed Vegetable Curry', 'Mixed vegetables in tomato gravy', 'Curries', '🥗', 35, 'Easy', 180, 240, 8, 28, 10, 6],
-    ],
+  const scale = servings / recipe.baseServings;
 
-    // ---------- CONTINENTAL (35) — European classics ----------
-    con: [
-      ['fettuccine-alfredo', 'Fettuccine Alfredo', 'Butter-parmesan cream pasta', 'Pasta', '🍝', 25, 'Easy', 280, 560, 18, 56, 30, 2],
-      ['penne-arrabiata', 'Penne Arrabiata', 'Spicy tomato-garlic pasta', 'Pasta', '🍝', 25, 'Easy', 220, 420, 12, 64, 12, 4],
-      ['lasagna', 'Classic Lasagna', 'Layered pasta, beef ragù, béchamel', 'Pasta', '🍱', 90, 'Hard', 480, 620, 30, 48, 32, 4],
-      ['margherita-pizza', 'Margherita Pizza', 'Tomato, mozzarella, basil', 'Pizza', '🍕', 45, 'Medium', 280, 480, 20, 56, 18, 3],
-      ['pepperoni-pizza', 'Pepperoni Pizza', 'Spicy salami, cheese, oregano', 'Pizza', '🍕', 45, 'Medium', 360, 540, 22, 54, 26, 3],
-      ['four-cheese-pizza', 'Four Cheese Pizza', 'Mozzarella, gorgonzola, fontina, parmesan', 'Pizza', '🍕', 50, 'Medium', 420, 580, 26, 52, 32, 2],
-      ['caesar-salad', 'Caesar Salad', 'Romaine, anchovy dressing, croutons', 'Salads', '🥗', 20, 'Easy', 240, 280, 8, 14, 22, 3],
-      ['greek-salad', 'Greek Salad', 'Feta, olives, cucumber, oregano', 'Salads', '🥗', 15, 'Easy', 220, 240, 8, 12, 18, 4],
-      ['caprese-salad', 'Caprese Salad', 'Tomato, mozzarella, basil, balsamic', 'Salads', '🥗', 10, 'Easy', 260, 260, 14, 8, 20, 2],
-      ['french-onion-soup', 'French Onion Soup', 'Caramelized onion, gruyère crust', 'Soups', '🍲', 90, 'Medium', 220, 320, 12, 28, 18, 4],
-      ['minestrone', 'Minestrone', 'Hearty vegetable-bean soup', 'Soups', '🍲', 50, 'Easy', 180, 240, 10, 36, 6, 8],
-      ['tomato-soup', 'Cream of Tomato', 'Roasted tomato, basil, cream', 'Soups', '🍅', 35, 'Easy', 160, 220, 6, 22, 14, 4],
-      ['mushroom-risotto', 'Mushroom Risotto', 'Arborio rice, porcini, parmesan', 'Mains', '🍚', 40, 'Medium', 360, 480, 14, 64, 16, 3],
-      ['seafood-risotto', 'Seafood Risotto', 'Saffron, prawns, mussels, white wine', 'Mains', '🦐', 50, 'Hard', 560, 540, 28, 58, 20, 2],
-      ['ratatouille', 'Ratatouille', 'Provençal stewed summer vegetables', 'Mains', '🍆', 60, 'Medium', 240, 260, 6, 28, 14, 8],
-      ['coq-au-vin-blanc', 'Chicken in White Wine', 'Riesling-braised chicken, mushrooms', 'Mains', '🍗', 80, 'Hard', 460, 520, 36, 12, 28, 3],
-      ['ossobuco', 'Ossobuco', 'Veal shanks, gremolata', 'Mains', '🍖', 180, 'Hard', 780, 680, 48, 14, 38, 2],
-      ['french-toast', 'French Toast', 'Brioche, vanilla custard, maple', 'Sides', '🍞', 20, 'Easy', 160, 380, 10, 48, 16, 2],
-      ['garlic-bread', 'Garlic Bread', 'Baguette, garlic-herb butter', 'Sides', '🥖', 15, 'Easy', 120, 280, 6, 36, 12, 2],
-      ['mashed-potatoes', 'Mashed Potatoes', 'Cream, butter, chives', 'Sides', '🥔', 30, 'Easy', 140, 320, 6, 42, 14, 4],
-      ['roasted-vegetables', 'Roasted Root Vegetables', 'Carrot, parsnip, rosemary', 'Sides', '🥕', 45, 'Easy', 180, 220, 4, 32, 8, 8],
-      ['ratatouille-tart', 'Ratatouille Tart', 'Layered vegetables on puff pastry', 'Mains', '🥧', 75, 'Hard', 280, 380, 8, 32, 22, 6],
-      ['quiche-lorraine', 'Quiche Lorraine', 'Bacon, egg, gruyère in pastry', 'Mains', '🥧', 75, 'Medium', 360, 480, 18, 28, 32, 2],
-      ['moussaka', 'Moussaka', 'Layered eggplant, lamb, béchamel', 'Mains', '🍱', 120, 'Hard', 520, 580, 28, 32, 36, 5],
-      ['paella', 'Paella Valenciana', 'Saffron rice, rabbit, beans', 'Mains', '🍚', 75, 'Hard', 560, 580, 32, 62, 18, 4],
-      ['spaghetti-bolognese', 'Spaghetti Bolognese', 'Slow-cooked meat ragù', 'Pasta', '🍝', 90, 'Medium', 340, 580, 28, 56, 22, 4],
-      ['pesto-genovese', 'Pesto Genovese', 'Basil, pine nut, garlic pasta', 'Pasta', '🍝', 20, 'Easy', 280, 540, 14, 56, 28, 3],
-      ['mac-and-cheese', 'Mac and Cheese', 'Macaroni, cheddar mornay sauce', 'Pasta', '🧀', 35, 'Easy', 260, 580, 22, 56, 28, 2],
-      ['tortellini-broth', 'Tortellini in Broth', 'Stuffed pasta in chicken consommé', 'Pasta', '🍜', 60, 'Hard', 320, 380, 18, 42, 14, 2],
-      ['herb-roasted-chicken', 'Herb-Roasted Chicken', 'Whole bird, lemon, thyme, garlic', 'Mains', '🍗', 90, 'Medium', 460, 540, 42, 4, 36, 1],
-      ['beef-stroganoff', 'Beef Stroganoff', 'Tenderloin, mushroom, sour cream', 'Mains', '🥩', 50, 'Medium', 560, 580, 36, 22, 36, 3],
-      ['veal-piccata', 'Veal Piccata', 'Lemon-caper butter sauce', 'Mains', '🍖', 35, 'Medium', 620, 460, 38, 6, 30, 1],
-      ['risotto-milanese', 'Risotto Milanese', 'Saffron-perfumed arborio rice', 'Mains', '🍚', 45, 'Medium', 340, 460, 12, 64, 14, 2],
-      ['caponata', 'Sicilian Caponata', 'Sweet-sour eggplant relish', 'Sides', '🍆', 50, 'Medium', 180, 220, 4, 24, 12, 6],
-    ],
+  const scaledIngredients = useMemo(() => (
+    recipe.ingredients.map(ing => ({
+      ...ing,
+      qtyScaled: ing.qty * scale,
+      priceScaled: ing.price * scale,
+    }))
+  ), [scale, recipe.id]);
 
-    // ---------- CHINESE (35) — Indo-Chinese + classic ----------
-    chi: [
-      ['veg-fried-rice', 'Vegetable Fried Rice', 'Wok-tossed rice with carrots, peas, egg', 'Rice', '🍚', 20, 'Easy', 180, 380, 10, 56, 12, 4],
-      ['chicken-fried-rice', 'Chicken Fried Rice', 'Smoky soy-glazed rice with chicken', 'Rice', '🍚', 25, 'Easy', 220, 440, 22, 54, 14, 3],
-      ['egg-fried-rice', 'Egg Fried Rice', 'Classic wok-fried rice with scrambled egg', 'Rice', '🍚', 18, 'Easy', 140, 380, 14, 54, 12, 3],
-      ['schezwan-rice', 'Schezwan Fried Rice', 'Fiery red, garlic-laced, chili oil', 'Rice', '🍚', 25, 'Medium', 220, 420, 10, 58, 16, 4],
-      ['veg-hakka-noodles', 'Veg Hakka Noodles', 'Wok-tossed noodles with julienned veg', 'Noodles', '🍜', 25, 'Easy', 180, 380, 8, 56, 12, 4],
-      ['chicken-hakka-noodles', 'Chicken Hakka Noodles', 'Wok-fried noodles with chicken', 'Noodles', '🍜', 30, 'Easy', 220, 440, 22, 54, 14, 3],
-      ['schezwan-noodles', 'Schezwan Noodles', 'Spicy red chili sauce, garlic', 'Noodles', '🍜', 25, 'Medium', 220, 420, 10, 58, 14, 4],
-      ['chowmein', 'Chow Mein', 'Crispy fried noodles, vegetables, soy', 'Noodles', '🍜', 25, 'Easy', 220, 460, 12, 60, 18, 4],
-      ['singapore-noodles', 'Singapore Noodles', 'Curry-spiced rice vermicelli', 'Noodles', '🍜', 30, 'Medium', 240, 440, 14, 58, 16, 4],
-      ['chilli-paneer', 'Chilli Paneer', 'Crispy paneer in soy-chili sauce', 'Starters', '🌶️', 30, 'Medium', 280, 460, 22, 22, 30, 3],
-      ['chilli-chicken', 'Chilli Chicken', 'Indo-Chinese chicken in red sauce', 'Starters', '🌶️', 35, 'Medium', 320, 480, 32, 22, 26, 2],
-      ['honey-chilli-potato', 'Honey Chilli Potato', 'Sticky-sweet crispy potato', 'Starters', '🥔', 30, 'Easy', 180, 380, 4, 56, 16, 4],
-      ['veg-manchurian-dry', 'Veg Manchurian Dry', 'Cabbage balls in soy-ginger glaze', 'Starters', '🥬', 40, 'Medium', 220, 380, 8, 42, 20, 4],
-      ['gobi-manchurian', 'Gobi Manchurian', 'Crispy cauliflower in sticky sauce', 'Starters', '🥦', 35, 'Medium', 220, 360, 8, 38, 20, 4],
-      ['chicken-manchurian', 'Chicken Manchurian', 'Crispy chicken in tangy sauce', 'Gravies', '🍗', 40, 'Medium', 320, 460, 28, 28, 24, 2],
-      ['veg-manchurian-gravy', 'Veg Manchurian Gravy', 'Veg balls in soy-ginger gravy', 'Gravies', '🥬', 45, 'Medium', 240, 380, 8, 44, 18, 4],
-      ['kung-pao-chicken', 'Kung Pao Chicken', 'Sichuan peanut-chili stir-fry', 'Gravies', '🥜', 30, 'Medium', 340, 480, 32, 18, 28, 3],
-      ['mapo-tofu', 'Mapo Tofu', 'Sichuan tofu in chili bean sauce', 'Gravies', '🌶️', 30, 'Medium', 260, 360, 22, 14, 22, 3],
-      ['sweet-sour-chicken', 'Sweet and Sour Chicken', 'Battered chicken in pineapple sauce', 'Gravies', '🍍', 40, 'Medium', 340, 540, 28, 48, 22, 2],
-      ['orange-chicken', 'Orange Chicken', 'Crispy chicken in citrus glaze', 'Gravies', '🍊', 40, 'Medium', 360, 540, 28, 46, 24, 2],
-      ['beef-broccoli', 'Beef and Broccoli', 'Stir-fried beef with garlic-oyster sauce', 'Gravies', '🥩', 25, 'Medium', 460, 460, 34, 18, 26, 4],
-      ['veg-spring-rolls', 'Vegetable Spring Rolls', 'Crispy rolls with cabbage-carrot filling', 'Starters', '🥬', 45, 'Medium', 180, 320, 6, 38, 16, 4],
-      ['dim-sum-veg', 'Vegetable Dim Sum', 'Steamed translucent dumplings', 'Dim Sum', '🥟', 60, 'Hard', 240, 320, 8, 48, 8, 3],
-      ['dim-sum-chicken', 'Chicken Dim Sum', 'Steamed chicken-mushroom dumplings', 'Dim Sum', '🥟', 60, 'Hard', 280, 360, 18, 42, 10, 2],
-      ['pork-dumplings', 'Pork Dumplings', 'Pan-fried potstickers', 'Dim Sum', '🥟', 75, 'Hard', 320, 420, 18, 38, 18, 2],
-      ['wonton-soup', 'Wonton Soup', 'Shrimp wontons in clear broth', 'Soups', '🍲', 50, 'Medium', 220, 280, 18, 32, 6, 2],
-      ['hot-and-sour-soup', 'Hot and Sour Soup', 'Tangy-spicy mushroom-tofu broth', 'Soups', '🍲', 30, 'Easy', 160, 180, 10, 18, 6, 3],
-      ['sweet-corn-soup', 'Sweet Corn Veg Soup', 'Creamed corn, julienned vegetables', 'Soups', '🌽', 30, 'Easy', 140, 220, 6, 38, 4, 4],
-      ['manchow-soup', 'Manchow Soup', 'Spicy broth with crispy noodle topping', 'Soups', '🍜', 35, 'Medium', 160, 220, 8, 30, 6, 3],
-      ['mushroom-soup', 'Mushroom Clear Soup', 'Light mushroom-celery broth', 'Soups', '🍄', 25, 'Easy', 160, 140, 6, 14, 4, 2],
-      ['szechuan-prawns', 'Szechuan Prawns', 'Fiery wok-tossed prawns', 'Gravies', '🦐', 30, 'Medium', 460, 380, 28, 18, 22, 2],
-      ['lemon-chicken', 'Crispy Lemon Chicken', 'Battered chicken in lemon sauce', 'Gravies', '🍋', 40, 'Medium', 340, 520, 28, 44, 22, 2],
-      ['kung-pao-paneer', 'Kung Pao Paneer', 'Paneer with peanuts and chili', 'Gravies', '🌶️', 30, 'Medium', 280, 440, 20, 16, 30, 3],
-      ['drums-of-heaven', 'Drums of Heaven', 'Frenched chicken wings in spicy glaze', 'Starters', '🍗', 50, 'Medium', 340, 440, 28, 18, 26, 2],
-      ['crispy-corn', 'Crispy Corn', 'Battered sweet corn with chili-pepper', 'Starters', '🌽', 25, 'Easy', 160, 280, 6, 38, 12, 4],
-    ],
+  const totalCost = useMemo(() => (
+    Math.round(scaledIngredients.reduce((sum, i) => sum + i.priceScaled, 0))
+  ), [scaledIngredients]);
 
-    // ---------- DESSERTS (35) ----------
-    des: [
-      ['gulab-jamun', 'Gulab Jamun', 'Khoya dumplings in cardamom syrup', 'Indian Sweets', '🍡', 60, 'Medium', 180, 320, 6, 48, 14, 1],
-      ['rasgulla', 'Rasgulla', 'Spongy cottage cheese balls in syrup', 'Indian Sweets', '⚪', 60, 'Medium', 160, 260, 8, 42, 8, 0],
-      ['ras-malai', 'Rasmalai', 'Paneer discs in saffron-cardamom milk', 'Indian Sweets', '🥛', 90, 'Medium', 220, 340, 12, 38, 16, 1],
-      ['jalebi', 'Jalebi', 'Crispy spirals in rose syrup', 'Indian Sweets', '🥨', 45, 'Medium', 140, 360, 4, 56, 14, 1],
-      ['kheer', 'Rice Kheer', 'Slow-cooked rice pudding with cardamom', 'Puddings', '🍚', 60, 'Easy', 140, 280, 8, 42, 10, 1],
-      ['gajar-halwa', 'Gajar Halwa', 'Carrot pudding with khoya and nuts', 'Indian Sweets', '🥕', 90, 'Medium', 220, 380, 8, 42, 20, 4],
-      ['moong-dal-halwa', 'Moong Dal Halwa', 'Yellow lentil pudding with ghee', 'Indian Sweets', '🟡', 75, 'Hard', 220, 440, 10, 48, 24, 4],
-      ['besan-laddu', 'Besan Laddu', 'Roasted chickpea flour balls', 'Indian Sweets', '🟡', 45, 'Easy', 140, 320, 6, 38, 16, 2],
-      ['coconut-laddu', 'Coconut Laddu', 'Condensed milk and coconut balls', 'Indian Sweets', '🥥', 30, 'Easy', 160, 280, 4, 32, 16, 3],
-      ['kaju-katli', 'Kaju Katli', 'Cashew-fudge diamonds', 'Indian Sweets', '💎', 60, 'Hard', 320, 360, 8, 36, 20, 1],
-      ['mysore-pak', 'Mysore Pak', 'Ghee-rich gram flour sweet', 'Indian Sweets', '🟡', 60, 'Hard', 220, 380, 4, 42, 22, 1],
-      ['shrikhand', 'Shrikhand', 'Hung yogurt with saffron and nuts', 'Indian Sweets', '🥥', 30, 'Easy', 140, 280, 8, 36, 12, 1],
-      ['chocolate-cake', 'Chocolate Cake', 'Dense, fudgy, ganache-glazed', 'Cakes', '🍰', 75, 'Medium', 320, 480, 6, 56, 28, 3],
-      ['red-velvet-cake', 'Red Velvet Cake', 'Cocoa sponge, cream cheese frosting', 'Cakes', '🍰', 90, 'Hard', 360, 460, 6, 58, 24, 1],
-      ['tiramisu', 'Tiramisu', 'Coffee-soaked sponge, mascarpone', 'Cakes', '🍰', 240, 'Medium', 360, 420, 8, 38, 26, 1],
-      ['cheesecake', 'New York Cheesecake', 'Dense baked cream cheese, graham crust', 'Cakes', '🍰', 360, 'Medium', 420, 460, 8, 38, 30, 1],
-      ['carrot-cake', 'Carrot Cake', 'Spiced, walnut-studded, cream cheese frost', 'Cakes', '🥕', 90, 'Medium', 280, 440, 8, 52, 22, 3],
-      ['lemon-cake', 'Lemon Drizzle Cake', 'Citrus sponge, sugar glaze', 'Cakes', '🍋', 75, 'Easy', 220, 380, 6, 54, 16, 1],
-      ['brownies', 'Fudgy Brownies', 'Dense, dark, crackly-top', 'Cakes', '🍫', 50, 'Easy', 220, 380, 4, 44, 22, 2],
-      ['tres-leches', 'Tres Leches', 'Three-milk soaked sponge', 'Cakes', '🥛', 240, 'Medium', 260, 380, 8, 42, 18, 1],
-      ['vanilla-icecream', 'Vanilla Ice Cream', 'Custard-based, vanilla bean', 'Frozen', '🍦', 300, 'Medium', 220, 260, 4, 28, 14, 0],
-      ['chocolate-icecream', 'Chocolate Ice Cream', 'Cocoa-rich custard base', 'Frozen', '🍫', 300, 'Medium', 240, 280, 4, 32, 16, 2],
-      ['mango-kulfi', 'Mango Kulfi', 'Reduced milk, mango pulp, no-churn', 'Frozen', '🥭', 360, 'Easy', 180, 260, 6, 34, 10, 1],
-      ['pista-kulfi', 'Pistachio Kulfi', 'Reduced milk, ground pistachio', 'Frozen', '🥜', 360, 'Easy', 200, 280, 8, 32, 14, 2],
-      ['falooda', 'Falooda', 'Rose syrup, vermicelli, ice cream, basil seeds', 'Frozen', '🌹', 30, 'Easy', 180, 360, 6, 60, 12, 2],
-      ['apple-pie', 'Apple Pie', 'Spiced apples, butter-lattice crust', 'Pastries', '🥧', 120, 'Hard', 320, 420, 4, 56, 18, 3],
-      ['eclairs', 'Chocolate Éclairs', 'Choux pastry, cream filling, ganache', 'Pastries', '🍫', 75, 'Hard', 240, 340, 6, 32, 20, 1],
-      ['profiteroles', 'Profiteroles', 'Cream-filled puffs, warm chocolate sauce', 'Pastries', '🍫', 90, 'Hard', 260, 380, 6, 32, 24, 1],
-      ['baklava', 'Baklava', 'Filo, pistachio, honey syrup', 'Pastries', '🥮', 90, 'Hard', 280, 380, 6, 38, 22, 1],
-      ['macarons', 'French Macarons', 'Almond meringue, ganache center', 'Pastries', '🍪', 180, 'Hard', 320, 280, 4, 32, 14, 1],
-      ['creme-brulee', 'Crème Brûlée', 'Vanilla custard, torched sugar crust', 'Puddings', '🥄', 240, 'Medium', 240, 380, 6, 36, 26, 0],
-      ['panna-cotta', 'Panna Cotta', 'Vanilla cream set with gelatin', 'Puddings', '🥄', 240, 'Easy', 220, 320, 4, 28, 22, 0],
-      ['chocolate-mousse', 'Dark Chocolate Mousse', 'Whipped 70% chocolate, no flour', 'Puddings', '🍫', 60, 'Medium', 260, 360, 6, 24, 28, 3],
-      ['caramel-custard', 'Caramel Custard', 'Steamed egg custard with caramel', 'Puddings', '🍮', 90, 'Easy', 180, 280, 8, 38, 10, 0],
-      ['mango-mousse', 'Mango Mousse', 'Whipped cream and mango pulp', 'Puddings', '🥭', 30, 'Easy', 220, 280, 4, 30, 16, 2],
-    ],
+  const costPerServing = Math.round(totalCost / servings);
 
-    // ---------- SNACKS (35) — Street food + quick bites ----------
-    sna: [
-      ['samosa-chaat', 'Samosa Chaat', 'Crushed samosa, yogurt, chutneys', 'Street Food', '🥟', 20, 'Easy', 100, 340, 8, 42, 16, 5],
-      ['dahi-puri', 'Dahi Puri', 'Crispy shells, yogurt, sev', 'Street Food', '🥣', 25, 'Easy', 100, 280, 6, 38, 12, 4],
-      ['ragda-pattice', 'Ragda Pattice', 'Potato patties in white pea curry', 'Street Food', '🥔', 60, 'Medium', 140, 380, 10, 56, 12, 8],
-      ['sev-puri', 'Sev Puri', 'Flat puris, potato, chutney, sev', 'Street Food', '🍘', 20, 'Easy', 100, 320, 6, 42, 14, 4],
-      ['dabeli', 'Dabeli', 'Spiced potato in pav with pomegranate', 'Street Food', '🍔', 30, 'Medium', 100, 340, 8, 48, 12, 5],
-      ['vada-pav', 'Vada Pav', 'Potato dumpling in fried bread', 'Street Food', '🍔', 45, 'Medium', 80, 380, 8, 52, 16, 4],
-      ['mumbai-grilled-sandwich', 'Bombay Sandwich', 'Veg-stuffed, chutney, mint, grilled', 'Sandwiches', '🥪', 20, 'Easy', 140, 380, 12, 48, 14, 5],
-      ['paneer-sandwich', 'Paneer Tikka Sandwich', 'Grilled paneer, peppers, mint', 'Sandwiches', '🥪', 25, 'Easy', 180, 420, 18, 44, 18, 4],
-      ['club-sandwich', 'Club Sandwich', 'Layered chicken, bacon, lettuce', 'Sandwiches', '🥪', 30, 'Medium', 240, 540, 28, 42, 26, 4],
-      ['veg-club-sandwich', 'Veg Club Sandwich', 'Triple-layer, cheese, tomato, cucumber', 'Sandwiches', '🥪', 25, 'Easy', 180, 460, 16, 48, 20, 5],
-      ['grilled-cheese', 'Grilled Cheese', 'Buttered toast, melted cheddar', 'Sandwiches', '🧀', 10, 'Easy', 140, 420, 16, 32, 22, 2],
-      ['french-fries', 'French Fries', 'Twice-fried golden potato sticks', 'Fried', '🍟', 30, 'Easy', 120, 380, 4, 48, 18, 4],
-      ['masala-fries', 'Masala Fries', 'Chaat-spiced french fries', 'Fried', '🍟', 30, 'Easy', 140, 400, 4, 48, 20, 4],
-      ['onion-rings', 'Onion Rings', 'Crispy battered onion circles', 'Fried', '🧅', 25, 'Easy', 140, 340, 4, 38, 18, 3],
-      ['chicken-nuggets', 'Chicken Nuggets', 'Crispy breaded chicken bites', 'Fried', '🍗', 35, 'Easy', 220, 380, 22, 28, 18, 1],
-      ['mozzarella-sticks', 'Mozzarella Sticks', 'Battered string cheese', 'Fried', '🧀', 30, 'Medium', 220, 420, 16, 32, 24, 2],
-      ['cheese-balls', 'Cheese Balls', 'Mashed potato, cheese center, fried', 'Fried', '🧀', 30, 'Easy', 160, 360, 12, 36, 18, 3],
-      ['corn-cheese-toast', 'Corn Cheese Toast', 'Open-grilled corn-cheese topping', 'Bites', '🌽', 20, 'Easy', 140, 320, 12, 38, 14, 3],
-      ['bruschetta', 'Bruschetta', 'Toasted bread, tomato-basil', 'Bites', '🥖', 15, 'Easy', 180, 240, 6, 32, 8, 3],
-      ['nachos-cheese', 'Loaded Nachos', 'Chips, cheese sauce, jalapeños', 'Bites', '🧀', 20, 'Easy', 240, 480, 14, 48, 24, 5],
-      ['potato-wedges', 'Spicy Potato Wedges', 'Oven-baked, paprika-rubbed', 'Fried', '🥔', 45, 'Easy', 120, 280, 4, 44, 10, 5],
-      ['spring-roll-wrap', 'Spring Roll Wrap', 'Crispy roll, sweet chili dip', 'Wraps', '🌯', 30, 'Medium', 160, 280, 6, 38, 12, 4],
-      ['paneer-wrap', 'Paneer Kathi Roll', 'Paneer tikka in egg paratha', 'Wraps', '🌯', 30, 'Easy', 160, 420, 18, 44, 18, 4],
-      ['chicken-wrap', 'Chicken Kathi Roll', 'Chicken tikka in paratha', 'Wraps', '🌯', 35, 'Medium', 200, 460, 26, 42, 18, 3],
-      ['veg-frankie', 'Veg Frankie', 'Spiced veg, chutney, paratha roll', 'Wraps', '🌯', 25, 'Easy', 140, 360, 10, 48, 14, 5],
-      ['egg-roll', 'Egg Kathi Roll', 'Egg-coated paratha with masala', 'Wraps', '🌯', 20, 'Easy', 120, 380, 14, 38, 18, 3],
-      ['chilli-cheese-toast', 'Chilli Cheese Toast', 'Open-faced cheese-chili melt', 'Bites', '🧀', 15, 'Easy', 140, 340, 12, 32, 18, 2],
-      ['pizza-toast', 'Pizza Toast', 'Bread base with pizza toppings', 'Bites', '🍕', 20, 'Easy', 160, 380, 14, 42, 18, 3],
-      ['cutlet', 'Vegetable Cutlet', 'Mashed-veg patty, breadcrumb-fried', 'Fried', '🥬', 40, 'Easy', 120, 280, 6, 36, 12, 4],
-      ['chicken-cutlet', 'Chicken Cutlet', 'Minced chicken patty, panko-crusted', 'Fried', '🍗', 45, 'Medium', 180, 360, 22, 28, 18, 2],
-      ['egg-puff', 'Egg Puff', 'Boiled egg in flaky puff pastry', 'Bites', '🥚', 45, 'Medium', 100, 320, 10, 28, 20, 1],
-      ['paneer-puff', 'Paneer Puff', 'Spiced paneer in puff pastry', 'Bites', '🥧', 50, 'Medium', 120, 380, 14, 32, 22, 2],
-      ['masala-popcorn', 'Masala Popcorn', 'Chaat-spiced popped corn', 'Bites', '🍿', 10, 'Easy', 60, 180, 4, 28, 6, 4],
-      ['chana-jor-garam', 'Chana Jor Garam', 'Spiced flattened chickpeas', 'Bites', '🫘', 20, 'Easy', 80, 220, 10, 32, 4, 6],
-      ['peanut-chaat', 'Peanut Chaat', 'Boiled peanuts with onion, lemon, chili', 'Bites', '🥜', 15, 'Easy', 80, 280, 12, 18, 18, 5],
-    ],
+  const costByCat = useMemo(() => {
+    const acc = {};
+    scaledIngredients.forEach(i => { acc[i.cat] = (acc[i.cat] || 0) + i.priceScaled; });
+    const colorMap = {
+      Protein: '#FF3D5A',
+      Produce: '#3DDC97',
+      Dairy: '#FFC233',
+      Pantry: '#B97BFF',
+      Spice: '#FF6B35',
+    };
+    return Object.entries(acc).map(([cat, val]) => ({
+      cat, val: Math.round(val), color: colorMap[cat] || '#888',
+    })).sort((a,b) => b.val - a.val);
+  }, [scaledIngredients]);
 
-    // ---------- DRINKS (35) ----------
-    dri: [
-      ['sweet-lassi', 'Sweet Lassi', 'Yogurt, sugar, cardamom', 'Shakes', '🥛', 5, 'Easy', 60, 180, 6, 32, 4, 0],
-      ['salty-lassi', 'Salty Lassi', 'Yogurt, cumin, salt cooler', 'Shakes', '🥛', 5, 'Easy', 50, 100, 6, 8, 4, 0],
-      ['masala-chai', 'Masala Chai', 'Spiced milk tea with ginger-cardamom', 'Hot Drinks', '🍵', 15, 'Easy', 40, 80, 2, 12, 2, 0],
-      ['filter-coffee', 'South Indian Filter Coffee', 'Decoction-brewed, frothy milk', 'Hot Drinks', '☕', 20, 'Medium', 50, 90, 3, 14, 2, 0],
-      ['hot-chocolate', 'Hot Chocolate', 'Dark chocolate, milk, whipped cream', 'Hot Drinks', '🍫', 10, 'Easy', 120, 320, 8, 36, 16, 2],
-      ['cold-coffee', 'Cold Coffee', 'Blended coffee, milk, ice cream', 'Shakes', '☕', 5, 'Easy', 120, 280, 6, 32, 12, 0],
-      ['chocolate-shake', 'Chocolate Shake', 'Chocolate ice cream, milk, syrup', 'Shakes', '🍫', 5, 'Easy', 140, 380, 8, 48, 16, 1],
-      ['strawberry-shake', 'Strawberry Shake', 'Fresh strawberry, vanilla ice cream', 'Shakes', '🍓', 5, 'Easy', 160, 320, 6, 42, 12, 2],
-      ['banana-shake', 'Banana Shake', 'Banana, milk, honey, cinnamon', 'Shakes', '🍌', 5, 'Easy', 100, 280, 8, 48, 6, 3],
-      ['vanilla-shake', 'Vanilla Shake', 'Vanilla ice cream, milk, cream', 'Shakes', '🍦', 5, 'Easy', 140, 340, 6, 38, 16, 0],
-      ['oreo-shake', 'Oreo Cookie Shake', 'Crushed oreos, vanilla ice cream', 'Shakes', '🍪', 5, 'Easy', 160, 420, 8, 52, 18, 1],
-      ['nutella-shake', 'Nutella Shake', 'Hazelnut spread, milk, ice cream', 'Shakes', '🍫', 5, 'Easy', 180, 480, 10, 52, 24, 2],
-      ['mango-smoothie', 'Mango Smoothie', 'Mango, yogurt, honey, ice', 'Smoothies', '🥭', 10, 'Easy', 120, 240, 6, 42, 4, 3],
-      ['berry-smoothie', 'Mixed Berry Smoothie', 'Berries, yogurt, honey', 'Smoothies', '🫐', 10, 'Easy', 160, 220, 6, 38, 4, 5],
-      ['green-smoothie', 'Green Smoothie', 'Spinach, banana, apple, ginger', 'Smoothies', '🥬', 10, 'Easy', 140, 180, 4, 38, 2, 6],
-      ['orange-juice', 'Fresh Orange Juice', 'Hand-squeezed sweet orange', 'Juices', '🍊', 5, 'Easy', 80, 110, 2, 26, 0, 1],
-      ['watermelon-juice', 'Watermelon Juice', 'Chilled blended watermelon', 'Juices', '🍉', 5, 'Easy', 60, 80, 1, 20, 0, 1],
-      ['pomegranate-juice', 'Pomegranate Juice', 'Hand-pressed fresh pomegranate', 'Juices', '🍇', 10, 'Easy', 100, 130, 1, 32, 0, 1],
-      ['carrot-juice', 'Carrot-Beetroot-Apple', 'Cold-pressed root juice', 'Juices', '🥕', 10, 'Easy', 80, 100, 2, 24, 0, 3],
-      ['amla-juice', 'Amla Juice', 'Indian gooseberry, lemon, honey', 'Juices', '🟢', 10, 'Easy', 80, 60, 0, 16, 0, 2],
-      ['sugarcane-juice', 'Sugarcane Juice', 'Pressed cane with lemon-mint', 'Juices', '🎋', 5, 'Easy', 40, 180, 0, 44, 0, 0],
-      ['nimbu-pani', 'Nimbu Pani', 'Lemon, mint, salt, sugar refresher', 'Coolers', '🍋', 5, 'Easy', 30, 80, 0, 22, 0, 0],
-      ['jal-jeera', 'Jal Jeera', 'Cumin-mint tangy cooler', 'Coolers', '🌿', 10, 'Easy', 40, 40, 0, 10, 0, 0],
-      ['aam-panna', 'Aam Panna', 'Raw mango with mint cooler', 'Coolers', '🥭', 30, 'Medium', 60, 120, 1, 30, 0, 1],
-      ['virgin-mojito', 'Virgin Mojito', 'Mint-lime fizz', 'Mocktails', '🍃', 5, 'Easy', 100, 80, 0, 22, 0, 0],
-      ['blue-lagoon', 'Blue Lagoon', 'Blue curaçao-flavored citrus mocktail', 'Mocktails', '💙', 5, 'Easy', 120, 140, 0, 36, 0, 0],
-      ['shirley-temple', 'Shirley Temple', 'Ginger ale, grenadine, cherry', 'Mocktails', '🍒', 5, 'Easy', 100, 160, 0, 42, 0, 0],
-      ['pina-colada-virgin', 'Virgin Piña Colada', 'Pineapple-coconut blended', 'Mocktails', '🍍', 5, 'Easy', 140, 220, 2, 38, 8, 2],
-      ['fruit-punch', 'Fruit Punch', 'Multi-fruit fizz with orange-pineapple', 'Mocktails', '🍹', 10, 'Easy', 120, 140, 0, 36, 0, 1],
-      ['rose-milk', 'Rose Milk', 'Cold milk with rose syrup, basil seeds', 'Coolers', '🌹', 5, 'Easy', 60, 160, 4, 28, 4, 0],
-      ['cucumber-lemonade', 'Cucumber Lemonade', 'Cucumber, mint, lemon, fizz', 'Coolers', '🥒', 10, 'Easy', 60, 80, 0, 22, 0, 1],
-      ['iced-tea', 'Lemon Iced Tea', 'Brewed black tea, lemon, mint, ice', 'Coolers', '🧊', 15, 'Easy', 60, 60, 0, 16, 0, 0],
-      ['masala-buttermilk', 'Masala Chaas', 'Spiced buttermilk, ginger, curry leaf', 'Coolers', '🥛', 10, 'Easy', 40, 80, 4, 8, 4, 0],
-      ['kokum-sherbet', 'Kokum Sherbet', 'Tangy Konkan cooler', 'Coolers', '🟣', 15, 'Easy', 50, 100, 0, 26, 0, 0],
-    ],
-  };
-
-  // Flatten all category stubs into RECIPES map
-  Object.entries(STUBS_BY_CAT).forEach(([cat, list]) => {
-    list.forEach(([id, title, sub, subcat, emoji, totalMin, difficulty, baseCost, cal, prot, carb, fat, fib]) => {
-      RECIPES[id] = {
-        id,
-        title,
-        sub,
-        cuisine: CAT_CUISINE[cat],
-        emoji,
-        category: cat,
-        subcat,
-        heroGradient: CAT_HERO[cat],
-        baseServings: 4,
-        totalMin,
-        difficulty,
-        baseCost,
-        nutrition: { calories: cal, protein: prot, carbs: carb, fats: fat, fiber: fib },
-        isStub: true,
-        youtube: yt(title),
-      };
+  const grouped = useMemo(() => {
+    const groups = {};
+    scaledIngredients.forEach(ing => {
+      if (!groups[ing.cat]) groups[ing.cat] = [];
+      groups[ing.cat].push(ing);
     });
-  });
+    return groups;
+  }, [scaledIngredients]);
 
-  // Expose globally
-  window.GG_RECIPES = RECIPES;
-
-  // Helper for the recipe screen
-  window.GG_GET_RECIPE = function (id) {
-    return RECIPES[id] || null;
+  const toggle = (id) => {
+    setChecked(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
-  // Helper for category screen — get all recipes in a category
-  window.GG_GET_BY_CATEGORY = function (cat) {
-    return Object.values(RECIPES).filter(r => (r.category || 'non') === cat);
+  const n = recipe.nutrition;
+  // Generate portion options based on baseServings
+  const portionOpts = recipe.baseServings === 6
+    ? [2, 4, 6, 8]
+    : [1, 2, 4, 6];
+
+  return (
+    <div className="app-container fade-up">
+      <Hero recipe={recipe} saved={saved} onToggleSave={onToggleSave}/>
+
+      <div className="quick-stats">
+        <div className="qs-item">
+          <div className="qs-icon"><Icon name="clock"/></div>
+          <div className="qs-val">{recipe.totalMin} min</div>
+          <div className="qs-lbl">Total</div>
+        </div>
+        <div className="qs-item">
+          <div className="qs-icon"><Icon name="chef"/></div>
+          <div className="qs-val">{recipe.difficulty}</div>
+          <div className="qs-lbl">Difficulty</div>
+        </div>
+        <div className="qs-item">
+          <div className="qs-icon"><Icon name="users"/></div>
+          <div className="qs-val">{servings}</div>
+          <div className="qs-lbl">Serves</div>
+        </div>
+      </div>
+
+      <div className="portion-card">
+        <div className="portion-head">
+          <span className="label">Adjust servings</span>
+          <span className="recalc"><span className="pulse"/>Auto-recalc</span>
+        </div>
+        <div className="portion-toggle">
+          {portionOpts.map(num => (
+            <button key={num}
+              className={`portion-btn ${servings === num ? 'active' : ''}`}
+              onClick={() => setServings(num)}>
+              {num}
+              {num === recipe.baseServings && <span className="sup">★</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sect">
+        <div className="sect-head">
+          <h3>Nutrient <em>breakdown</em></h3>
+          <span className="aux">PER SERVING</span>
+        </div>
+      </div>
+      <div className="nutrient-row">
+        <NutrientRing value={n.calories} max={2000} label="Calories" unit="kcal" color="#FF6B35" pct={Math.round(n.calories/2000*100)}/>
+        <NutrientRing value={n.protein} max={50} label="Protein" unit="g" color="#FF3D5A" pct={Math.round(n.protein/50*100)}/>
+        <NutrientRing value={n.carbs} max={130} label="Carbs" unit="g" color="#FFC233" pct={Math.round(n.carbs/130*100)}/>
+        <NutrientRing value={n.fats} max={70} label="Fats" unit="g" color="#3DDC97" pct={Math.round(n.fats/70*100)}/>
+        <NutrientRing value={n.fiber} max={30} label="Fiber" unit="g" color="#4DD4FF" pct={Math.round(n.fiber/30*100)}/>
+      </div>
+
+      <div className="sect">
+        <div className="sect-head">
+          <h3>Cost <em>predictor</em></h3>
+          <span className="aux">{servings} SERVING{servings>1?'S':''}</span>
+        </div>
+      </div>
+      <div className="cost-card">
+        <div className="cost-row">
+          <div className="cost-left">
+            <div className="lbl">Total estimate</div>
+            <div className="val">₹{totalCost}</div>
+          </div>
+          <div className="cost-right">
+            <div className="lbl">Per serving</div>
+            <div className="val">₹{costPerServing}</div>
+          </div>
+        </div>
+        <div className="cost-bar">
+          {costByCat.map(c => (
+            <div key={c.cat} className="cost-seg" style={{flex: c.val, background: c.color}}/>
+          ))}
+        </div>
+        <div className="cost-legend">
+          {costByCat.map(c => (
+            <div key={c.cat} className="cost-legend-item">
+              <span className="swatch" style={{background: c.color}}/>
+              {c.cat}<span className="price">₹{c.val}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="sect">
+        <div className="sect-head">
+          <h3>Grocery <em>list</em></h3>
+          <span className="aux">{checked.size}/{recipe.ingredients.length}</span>
+        </div>
+      </div>
+      <div className="grocery">
+        <div className="grocery-head">
+          <span className="a">Tap to check off</span>
+          <span className="b">
+            <span className="checked">{checked.size}</span> / {recipe.ingredients.length} packed
+          </span>
+        </div>
+        {Object.entries(grouped).map(([cat, items]) => (
+          <div className="grocery-group" key={cat}>
+            <div className="group-lbl">{cat}</div>
+            {items.map(ing => (
+              <div key={ing.id}
+                className={`ing-row ${checked.has(ing.id) ? 'checked' : ''}`}
+                onClick={() => toggle(ing.id)}>
+                <div className="ing-check"><Icon name="check"/></div>
+                <div className="ing-emoji">{ing.emoji}</div>
+                <div className="ing-info">
+                  <div className="nm">{ing.name}</div>
+                  <div className={`qty ${scale !== 1 ? 'scaled' : ''}`}>
+                    {formatQty(ing.qtyScaled)}{ing.unit && ' ' + ing.unit}
+                  </div>
+                </div>
+                <div className="ing-price">₹{Math.round(ing.priceScaled)}</div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="sect">
+        <div className="sect-head">
+          <h3>Step-by-step <em>guide</em></h3>
+          <span className="aux">{recipe.steps.length} STEPS</span>
+        </div>
+      </div>
+      <div className="steps-wrap">
+        {recipe.steps.map(s => <StepCard key={`${recipe.id}-${s.n}`} step={s}/>)}
+      </div>
+
+      <a className="watch-fab" href={recipe.youtube} target="_blank" rel="noopener noreferrer">
+        <div className="yt-icon"><Icon name="youtube"/></div>
+        <span className="lbl">Watch Demo</span>
+      </a>
+      <TabBar/>
+    </div>
+  );
+};
+
+// === Not Found ===
+const NotFoundScreen = ({ id }) => (
+  <div className="nf-wrap fade-up">
+    <div className="nf-emoji">🤷</div>
+    <h2>Recipe not found</h2>
+    <p>
+      We couldn't find a recipe matching <code style={{fontFamily: 'JetBrains Mono, monospace', color: 'var(--orange)'}}>{id || '(no id)'}</code>.
+      Head back to browse the 18 dishes we do have.
+    </p>
+    <a className="nf-btn" href="./category.html?cat=non">
+      <Icon name="chevLeft"/> Back to Non-Veg
+    </a>
+    <TabBar/>
+  </div>
+);
+
+// === Top-level Screen ===
+const RecipeScreen = () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || 'butter-chicken';
+  const recipe = window.GG_GET_RECIPE ? window.GG_GET_RECIPE(id) : null;
+
+  const [saved, setSaved] = useState(() => loadSaved().has(id));
+
+  const toggleSave = () => {
+    const all = loadSaved();
+    if (all.has(id)) all.delete(id); else all.add(id);
+    try { localStorage.setItem('gg-bookmarks', JSON.stringify([...all])); } catch {}
+    setSaved(all.has(id));
   };
 
-})();
+  // Update page title once recipe is known
+  useEffect(() => {
+    if (recipe) {
+      document.title = `${recipe.title} — GustoGrid`;
+    }
+  }, [recipe]);
+
+  if (!recipe) return <NotFoundScreen id={id}/>;
+  if (recipe.isStub) return <StubScreen recipe={recipe} saved={saved} onToggleSave={toggleSave}/>;
+  return <FullRecipeScreen recipe={recipe} saved={saved} onToggleSave={toggleSave}/>;
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<RecipeScreen/>);
+
+requestAnimationFrame(() => {
+  const loader = document.getElementById('app-loading');
+  if (loader) {
+    loader.classList.add('fade-out');
+    setTimeout(() => loader.remove(), 400);
+  }
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('[SW] failed:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
