@@ -117,7 +117,10 @@ body::before {
 }
 
 /* ============================================================
-   LOADING SKELETON — shown until React mounts
+   LOADING SKELETON — shown only if React mount > 150ms
+   (Previously shown immediately on every navigation, made every
+    page tap feel like opening a new app. Now invisible 95% of
+    the time because React mounts in under 150ms.)
    ============================================================ */
 
 .app-loading {
@@ -130,11 +133,19 @@ body::before {
   justify-content: center;
   gap: 24px;
   z-index: 9999;
-  transition: opacity 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
+  animation: loader-appear 0.4s 0.15s forwards;
+}
+
+@keyframes loader-appear {
+  to { opacity: 1; pointer-events: auto; }
 }
 
 .app-loading.fade-out {
-  opacity: 0;
+  opacity: 0 !important;
+  animation: none;
+  transition: opacity 0.25s ease;
   pointer-events: none;
 }
 
@@ -334,12 +345,12 @@ a, button, .tab, .cat-card, .list-card, .grid-card,
 
 /* Animation utilities */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-up {
-  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes pulse-light {
@@ -349,4 +360,33 @@ a, button, .tab, .cat-card, .list-card, .grid-card,
 
 .pulse-light {
   animation: pulse-light 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   SPRING-TAP RESPONSE (v2.2)
+   Make cards feel weighty: press fast, release with overshoot.
+   Previously cards just scaled down flat on :active — felt
+   inert. Now they snap down in 80ms and spring back with a
+   gentle overshoot, like real iOS buttons.
+   ============================================================ */
+
+.cat-card:active,
+.creations-card:active,
+.fridge-hero:active,
+.list-card:active,
+.grid-card:active,
+.featured:active,
+.ing-chip:active,
+.portion-btn:active,
+.find-cta:active,
+.filter-chip:active,
+.sub-chip:active,
+.stub-btn:active,
+.tab:active,
+.hero-btn:active,
+.icon-btn:active,
+.timer-btn:active,
+.watch-fab:active,
+.install-prompt-btn:active {
+  transition: transform 0.08s ease-out !important;
 }
