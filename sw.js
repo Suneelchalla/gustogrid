@@ -3,13 +3,14 @@
  * Strategy: cache-first for app shell, network-first for HTML (with cache fallback)
  */
 
-const CACHE_VERSION = 'gustogrid-v2';
+const CACHE_VERSION = 'gustogrid-v4';
 const SHELL_ASSETS = [
   './',
   './index.html',
   './category.html',
   './recipe.html',
   './fridge.html',
+  './saved.html',
   './manifest.json',
   './theme.css',
   './data/recipes.js',
