@@ -461,6 +461,171 @@
     justify-content: center;
   }
   .install-prompt-close svg { width: 14px; height: 14px; }
+
+  /* ============================================================
+     SEARCH OVERLAY
+     ============================================================ */
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 7, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    animation: search-fade 0.2s ease-out;
+  }
+  @keyframes search-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .search-panel {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(20px + var(--safe-top));
+  }
+  .search-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-input-row svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Geist', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 8px 0;
+    -webkit-appearance: none;
+  }
+  .search-input::placeholder { color: var(--text-3); }
+  .search-close {
+    width: 32px; height: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .search-close svg { width: 14px; height: 14px; color: var(--text-2); }
+
+  .search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px calc(40px + var(--safe-bottom));
+  }
+  .search-hint {
+    padding: 60px 24px;
+    text-align: center;
+  }
+  .search-hint p {
+    margin: 0 0 8px;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+  .search-hint .search-hint-sub {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .search-hint em {
+    font-style: normal;
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--orange);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin: 0 2px;
+  }
+
+  .search-result-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 8px 12px;
+  }
+  .search-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+  }
+  .search-result:hover { background: var(--surface); }
+  .search-result:active { background: var(--surface-2); }
+  .sr-thumb {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .sr-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(0,0,0,0.2), transparent 50%);
+  }
+  .sr-em {
+    font-size: 26px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    z-index: 1;
+  }
+  .sr-body { flex: 1; min-width: 0; }
+  .sr-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+  }
+  .sr-sub {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sr-meta { display: flex; gap: 5px; flex-wrap: wrap; }
+  .sr-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-3);
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 5px;
+    letter-spacing: 0.04em;
+  }
+  .sr-pill.diff-Easy { color: var(--mint); }
+  .sr-pill.diff-Medium { color: var(--amber); }
+  .sr-pill.diff-Hard { color: var(--crimson); }
 </style>
 </head>
 
@@ -480,6 +645,9 @@
 
 <!-- React mount point -->
 <div id="root"></div>
+
+<!-- Recipe data layer (loaded before React for real counts + search) -->
+<script src="./data/recipes.js"></script>
 
 <!-- React -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -521,15 +689,25 @@ const Icon = ({ name, ...props }) => {
 };
 
 // === Categories data ===
+// Pull live counts from the data layer
+const getCount = (cat) => {
+  if (typeof window.GG_GET_BY_CATEGORY === 'function') {
+    return window.GG_GET_BY_CATEGORY(cat).length;
+  }
+  return 0;
+};
+
 const categories = [
-  { key: 'veg', name: 'Vegetarian', tag: 'Starters · Mains · Sides', icon: 'leaf', count: 38, cls: 'c-veg', href: './category.html?cat=veg' },
-  { key: 'non', name: 'Non-Veg', tag: 'Poultry · Seafood · Meat', icon: 'drumstick', count: 42, cls: 'c-non', href: './category.html?cat=non' },
-  { key: 'con', name: 'Continental', tag: 'European classics', icon: 'wine', count: 36, cls: 'c-con', href: './category.html?cat=con' },
-  { key: 'chi', name: 'Chinese', tag: 'Noodles · Gravies · Dim sum', icon: 'bowl', count: 35, cls: 'c-chi', href: './category.html?cat=chi' },
-  { key: 'des', name: 'Desserts', tag: 'Cakes · Sweets · Puddings', icon: 'cake', count: 40, cls: 'c-des', href: './category.html?cat=des' },
-  { key: 'sna', name: 'Snacks', tag: 'Street food · Quick bites', icon: 'sparkles', count: 37, cls: 'c-sna', href: './category.html?cat=sna' },
-  { key: 'dri', name: 'Drinks', tag: 'Juices · Mocktails · Shakes', icon: 'glass', count: 35, cls: 'c-dri', href: './category.html?cat=dri' },
+  { key: 'veg', name: 'Vegetarian', tag: 'Starters · Mains · Sides', icon: 'leaf', count: getCount('veg'), cls: 'c-veg', href: './category.html?cat=veg' },
+  { key: 'non', name: 'Non-Veg', tag: 'Poultry · Seafood · Meat', icon: 'drumstick', count: getCount('non'), cls: 'c-non', href: './category.html?cat=non' },
+  { key: 'con', name: 'Continental', tag: 'European classics', icon: 'wine', count: getCount('con'), cls: 'c-con', href: './category.html?cat=con' },
+  { key: 'chi', name: 'Chinese', tag: 'Noodles · Gravies · Dim sum', icon: 'bowl', count: getCount('chi'), cls: 'c-chi', href: './category.html?cat=chi' },
+  { key: 'des', name: 'Desserts', tag: 'Cakes · Sweets · Puddings', icon: 'cake', count: getCount('des'), cls: 'c-des', href: './category.html?cat=des' },
+  { key: 'sna', name: 'Snacks', tag: 'Street food · Quick bites', icon: 'sparkles', count: getCount('sna'), cls: 'c-sna', href: './category.html?cat=sna' },
+  { key: 'dri', name: 'Drinks', tag: 'Juices · Mocktails · Shakes', icon: 'glass', count: getCount('dri'), cls: 'c-dri', href: './category.html?cat=dri' },
 ];
+
+const TOTAL_DISHES = categories.reduce((sum, c) => sum + c.count, 0);
 
 // === Install prompt hook ===
 const useInstallPrompt = () => {
@@ -563,8 +741,99 @@ const useInstallPrompt = () => {
 };
 
 // === Home Screen ===
+// Read fridge from localStorage
+const loadFridge = () => {
+  try {
+    const raw = localStorage.getItem('gg-fridge');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+};
+
+// === Search Overlay ===
+const SearchOverlay = ({ onClose }) => {
+  const [query, setQuery] = useState('');
+  const inputRef = React.useRef(null);
+
+  // Auto-focus the input when overlay opens
+  useEffect(() => {
+    inputRef.current && inputRef.current.focus();
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  // Filter the recipes
+  const results = React.useMemo(() => {
+    if (!query.trim() || !window.GG_RECIPES) return [];
+    const q = query.toLowerCase().trim();
+    return Object.values(window.GG_RECIPES)
+      .filter(r => {
+        const hay = `${r.title} ${r.sub || ''} ${r.cuisine || ''} ${r.subcat || ''}`.toLowerCase();
+        return hay.includes(q);
+      })
+      .slice(0, 40);
+  }, [query]);
+
+  return (
+    <div className="search-overlay" onClick={(e) => { if (e.target.classList.contains('search-overlay')) onClose(); }}>
+      <div className="search-panel">
+        <div className="search-input-row">
+          <Icon name="search" style={{color: 'var(--text-3)'}}/>
+          <input
+            ref={inputRef}
+            type="text"
+            className="search-input"
+            placeholder="Search 228 recipes…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoComplete="off"
+          />
+          <button className="search-close" onClick={onClose} aria-label="Close">
+            <Icon name="x"/>
+          </button>
+        </div>
+        <div className="search-results">
+          {query.trim() === '' ? (
+            <div className="search-hint">
+              <p>Type to search across all 228 recipes</p>
+              <p className="search-hint-sub">Try: <em>paneer</em>, <em>biryani</em>, <em>cake</em>, <em>noodles</em>, <em>juice</em></p>
+            </div>
+          ) : results.length === 0 ? (
+            <div className="search-hint">
+              <p>No matches for "<em>{query}</em>"</p>
+              <p className="search-hint-sub">Try a different ingredient or dish name</p>
+            </div>
+          ) : (
+            <>
+              <div className="search-result-count">{results.length} result{results.length === 1 ? '' : 's'}</div>
+              {results.map(r => (
+                <a key={r.id} className="search-result" href={`./recipe.html?id=${r.id}`}>
+                  <div className="sr-thumb" style={{background: r.heroGradient}}>
+                    <span className="sr-em">{r.emoji}</span>
+                  </div>
+                  <div className="sr-body">
+                    <div className="sr-title">{r.title}</div>
+                    <div className="sr-sub">{r.sub}</div>
+                    <div className="sr-meta">
+                      <span className="sr-pill">{r.cuisine}</span>
+                      <span className="sr-pill">{r.totalMin}m</span>
+                      <span className={`sr-pill diff-${r.difficulty}`}>{r.difficulty}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const HomeScreen = () => {
   const { canInstall, install, dismiss } = useInstallPrompt();
+  const [fridge] = useState(loadFridge);
+  const fridgeCount = fridge.length;
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <div className="app-container fade-up">
@@ -581,16 +850,22 @@ const HomeScreen = () => {
         <div className="avatar">C</div>
       </div>
 
-      <div className="search-bar">
+      <div className="search-bar" onClick={() => setSearchOpen(true)}>
         <Icon name="search"/>
         <span className="placeholder">Search dishes, ingredients, ideas…</span>
         <div className="mic"><Icon name="mic"/></div>
       </div>
 
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)}/>}
+
       <a href="./fridge.html" className="fridge-hero">
         <div className="fridge-hero-row">
           <div>
-            <div className="fridge-hero-eyebrow">Smart match · 12 ready</div>
+            <div className="fridge-hero-eyebrow">
+              {fridgeCount === 0
+                ? 'Smart match · tap to start'
+                : `Smart match · ${fridgeCount} ingredient${fridgeCount === 1 ? '' : 's'}`}
+            </div>
             <h3 className="fridge-hero-title">What's in your <em>fridge</em>?</h3>
             <p className="fridge-hero-sub">Tap what you have. We'll surface recipes you can cook right now.</p>
           </div>
@@ -600,23 +875,23 @@ const HomeScreen = () => {
         </div>
         <div className="hero-stat-row">
           <div className="hero-stat">
-            <div className="v">12</div>
-            <div className="l">Ready now</div>
+            <div className="v">{fridgeCount}</div>
+            <div className="l">In your fridge</div>
           </div>
           <div className="hero-stat">
-            <div className="v">28</div>
-            <div className="l">≥80% match</div>
+            <div className="v">{TOTAL_DISHES}</div>
+            <div className="l">Recipes ready</div>
           </div>
           <div className="hero-stat">
-            <div className="v">90%</div>
-            <div className="l">Top match</div>
+            <div className="v">7</div>
+            <div className="l">Categories</div>
           </div>
         </div>
       </a>
 
       <div className="section-head">
         <h3 className="title">Browse by <em>category</em></h3>
-        <span className="count">7 + 1</span>
+        <span className="count">{TOTAL_DISHES} dishes</span>
       </div>
 
       <div className="cat-grid">
