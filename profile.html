@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Your Kitchen — GustoGrid</title>
+<meta name="description" content="Your saved recipes, fridge inventory, and creations — all in one place.">
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#FF6B35">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GustoGrid">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="./theme.css">
+
+<style>
+  .p-head {
+    padding: calc(20px + var(--safe-top)) 24px 24px;
+  }
+  .p-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .p-eyebrow .dot {
+    width: 6px; height: 6px;
+    background: var(--mint);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--mint);
+  }
+  .p-eyebrow span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .p-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin: 0;
+  }
+  .p-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .p-sub {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  .p-avatar {
+    width: 72px; height: 72px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 30px;
+    color: #1a0d05;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px -8px rgba(255, 107, 53, 0.5);
+    position: relative;
+  }
+  .p-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--mint);
+    border: 3px solid var(--bg);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 24px 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-v {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.01em;
+  }
+  .stat-l {
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .section-head {
+    padding: 0 24px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .section-head .title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .section-head .title em { font-style: italic; color: var(--orange); }
+  .section-head .ct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+  }
+  .section-head .ct .n { color: var(--text); }
+  .section-head a.manage {
+    font-size: 12px;
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* Saved recipes grid */
+  .saved-grid {
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .saved-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .saved-card:active { transform: scale(0.97); }
+  .saved-thumb {
+    aspect-ratio: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .saved-thumb::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(0,0,0,0.25), transparent 50%);
+  }
+  .saved-thumb .em {
+    font-size: 48px;
+    line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    z-index: 1;
+  }
+  .saved-body { padding: 12px; }
+  .saved-title {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 4px;
+    line-height: 1.2;
+    min-height: 34px;
+  }
+  .saved-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+  }
+  .saved-meta .dot { width: 3px; height: 3px; background: var(--text-3); border-radius: 50%; }
+  .saved-meta .price { color: var(--orange); }
+  .saved-unbookmark {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 28px; height: 28px;
+    background: rgba(10,10,11,0.7);
+    backdrop-filter: blur(8px);
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .saved-unbookmark svg { width: 13px; height: 13px; color: var(--amber); fill: var(--amber); }
+
+  /* Empty state */
+  .empty-state {
+    margin: 0 24px 32px;
+    padding: 32px 20px;
+    background: var(--surface);
+    border: 1px dashed var(--border-2);
+    border-radius: 22px;
+    text-align: center;
+  }
+  .empty-state .em {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+  .empty-state h4 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .empty-state p {
+    font-size: 12px;
+    color: var(--text-2);
+    margin: 0 0 14px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    border-radius: 12px;
+    color: #1a0d05;
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+    font-family: 'Geist', sans-serif;
+  }
+  .empty-btn svg { width: 13px; height: 13px; }
+
+  /* Fridge chips */
+  .fridge-chip-row {
+    padding: 0 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+  .fridge-chip-pill {
+    padding: 6px 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    color: var(--text-2);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .fridge-chip-pill .emoji { font-size: 13px; }
+
+  /* About / version */
+  .about-card {
+    margin: 0 24px 32px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+  }
+  .about-card .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .about-card .row + .row {
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+    padding-top: 12px;
+  }
+  .about-card .lbl {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .about-card .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .danger-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    background: transparent;
+    border: 1px solid rgba(255, 61, 90, 0.3);
+    border-radius: 12px;
+    color: var(--crimson);
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .danger-btn:active { background: rgba(255, 61, 90, 0.08); }
+</style>
+</head>
+
+<body>
+
+<div id="app-loading" class="app-loading">
+  <div class="app-loading-mark">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none">
+      <path d="M4 6h11M4 12h7M4 18h11" stroke="#1a0d05" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 4 L22 4 L20 13 L20 20 Q20 21 19 21 Q18 21 18 20 L18 13 Z" fill="#1a0d05"/>
+    </svg>
+  </div>
+  <div class="app-loading-text">GustoGrid</div>
+  <div class="app-loading-sub">Loading your kitchen…</div>
+</div>
+
+<div id="root"></div>
+
+<!-- Recipe data layer is needed to render saved cards -->
+<script src="./data/recipes.js"></script>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+const Icon = ({ name, ...props }) => {
+  const paths = {
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    fridge: <><path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 10h14"/><path d="M15 7v6"/><path d="M9 7v6"/></>,
+    book: <><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></>,
+    bookmark: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></>,
+    user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    bookmarkFilled: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/></>,
+    plus: <><path d="M5 12h14"/><path d="M12 5v14"/></>,
+    arrowRight: <><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>,
+    search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+  };
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {paths[name]}
+    </svg>
+  );
+};
+
+// Thumb gradient based on recipe category emoji — soft mapping
+const thumbGradient = (id) => {
+  const r = window.GG_RECIPES && window.GG_RECIPES[id];
+  if (!r) return 'linear-gradient(135deg, #1a1a1d, #2d2d33)';
+  return r.heroGradient || 'linear-gradient(135deg, #4D1F26, #FF6B35)';
+};
+
+const loadJSON = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const ProfileScreen = () => {
+  const [bookmarks, setBookmarks] = useState(() => new Set(loadJSON('gg-bookmarks', [])));
+  const [fridge] = useState(() => loadJSON('gg-fridge', []));
+  const [creations] = useState(() => loadJSON('gg-creations', []));
+
+  const unsave = (id) => {
+    const next = new Set(bookmarks);
+    next.delete(id);
+    setBookmarks(next);
+    try { localStorage.setItem('gg-bookmarks', JSON.stringify([...next])); } catch {}
+  };
+
+  const clearEverything = () => {
+    if (!confirm('Reset bookmarks, fridge selections, and creations? This cannot be undone.')) return;
+    try {
+      localStorage.removeItem('gg-bookmarks');
+      localStorage.removeItem('gg-fridge');
+      localStorage.removeItem('gg-creations');
+      window.location.reload();
+    } catch {}
+  };
+
+  const savedRecipes = [...bookmarks]
+    .map(id => window.GG_RECIPES && window.GG_RECIPES[id])
+    .filter(Boolean);
+
+  const fridgeArr = Array.isArray(fridge) ? fridge : [];
+
+  // Ingredient emoji lookup (mirrors fridge.html)
+  const ingredientEmoji = {
+    'Onion': '🧅', 'Tomato': '🍅', 'Garlic': '🧄', 'Ginger': '🫚', 'Potato': '🥔',
+    'Carrot': '🥕', 'Bell pepper': '🫑', 'Spinach': '🥬', 'Chili': '🌶️',
+    'Chicken': '🍗', 'Beef': '🥩', 'Fish': '🐟', 'Shrimp': '🦐', 'Eggs': '🥚',
+    'Cheese': '🧀', 'Milk': '🥛', 'Butter': '🧈', 'Yogurt': '🥥',
+    'Rice': '🍚', 'Flour': '🌾', 'Pasta': '🍝', 'Lentils': '🫘',
+    'Salt': '🧂', 'Cumin': '🌿', 'Turmeric': '🟡', 'Pepper': '⚫', 'Cinnamon': '🌰',
+    'Lemon': '🍋',
+  };
+
+  return (
+    <div className="app-container fade-up">
+      <div className="p-head">
+        <div className="p-avatar">C</div>
+        <div className="p-eyebrow">
+          <span className="dot"/>
+          <span>Your kitchen · {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        </div>
+        <h1 className="p-title">Evening, <em>Chef</em></h1>
+        <p className="p-sub">Everything you've saved, stocked, and started.</p>
+      </div>
+
+      <div className="stats-row">
+        <div className="stat-card">
+          <div className="stat-v">{savedRecipes.length}</div>
+          <div className="stat-l">Bookmarked</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-v">{fridgeArr.length}</div>
+          <div className="stat-l">In fridge</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-v">{creations.length}</div>
+          <div className="stat-l">Creations</div>
+        </div>
+      </div>
+
+      <div className="section-head">
+        <h3 className="title">Saved <em>recipes</em></h3>
+        <span className="ct"><span className="n">{savedRecipes.length}</span> SAVED</span>
+      </div>
+      {savedRecipes.length === 0 ? (
+        <div className="empty-state">
+          <div className="em">🔖</div>
+          <h4>No bookmarks yet</h4>
+          <p>Tap the bookmark icon on any recipe to save it here for later.</p>
+          <a className="empty-btn" href="./category.html?cat=non">
+            Browse recipes <Icon name="arrowRight"/>
+          </a>
+        </div>
+      ) : (
+        <div className="saved-grid">
+          {savedRecipes.map(r => (
+            <a className="saved-card" key={r.id} href={`./recipe.html?id=${r.id}`}>
+              <div className="saved-thumb" style={{background: thumbGradient(r.id)}}>
+                <button className="saved-unbookmark"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); unsave(r.id); }}>
+                  <Icon name="bookmarkFilled"/>
+                </button>
+                <span className="em">{r.emoji}</span>
+              </div>
+              <div className="saved-body">
+                <h4 className="saved-title">{r.title}</h4>
+                <div className="saved-meta">
+                  <span>{r.totalMin}m</span>
+                  <span className="dot"/>
+                  <span className="price">₹{r.isStub ? r.baseCost : Math.round(r.ingredients.reduce((s,i)=>s+i.price,0))}</span>
+                  <span className="dot"/>
+                  <span>{r.difficulty}</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div className="section-head">
+        <h3 className="title">In your <em>fridge</em></h3>
+        <a className="manage" href="./fridge.html">Manage →</a>
+      </div>
+      {fridgeArr.length === 0 ? (
+        <div className="empty-state">
+          <div className="em">🧊</div>
+          <h4>Fridge is empty</h4>
+          <p>Tap ingredients you have on hand so we can find recipes you can cook right now.</p>
+          <a className="empty-btn" href="./fridge.html">
+            Stock your fridge <Icon name="arrowRight"/>
+          </a>
+        </div>
+      ) : (
+        <div className="fridge-chip-row">
+          {fridgeArr.map(name => (
+            <span key={name} className="fridge-chip-pill">
+              <span className="emoji">{ingredientEmoji[name] || '🥄'}</span>
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="section-head">
+        <h3 className="title">Your <em>creations</em></h3>
+        <a className="manage" href="./creations.html">{creations.length === 0 ? 'Add →' : 'View all →'}</a>
+      </div>
+      {creations.length === 0 ? (
+        <div className="empty-state">
+          <div className="em">✍️</div>
+          <h4>No creations yet</h4>
+          <p>Capture your own recipes so they're always at hand.</p>
+          <a className="empty-btn" href="./creations.html">
+            <Icon name="plus"/> Add a recipe
+          </a>
+        </div>
+      ) : (
+        <div style={{padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32}}>
+          {creations.slice(0, 3).map(c => (
+            <a key={c.id} href={`./creations.html?id=${c.id}`} style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 16,
+              padding: '14px 16px',
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}>
+              <span style={{fontSize: 24}}>📝</span>
+              <div style={{flex: 1, minWidth: 0}}>
+                <div style={{fontFamily: 'Fraunces, serif', fontSize: 14, fontWeight: 500, color: 'var(--text)'}}>{c.name}</div>
+                <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--text-3)', marginTop: 2}}>
+                  {(c.ingredients || []).length} ingredients · {(c.steps || []).length} steps
+                </div>
+              </div>
+              <Icon name="arrowRight" width="14" height="14" style={{color: 'var(--text-3)'}}/>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div className="section-head">
+        <h3 className="title">About</h3>
+      </div>
+      <div className="about-card">
+        <div className="row">
+          <span className="lbl">Version</span>
+          <span className="val">GustoGrid · v0.3</span>
+        </div>
+        <div className="row">
+          <span className="lbl">Build</span>
+          <span className="val">PWA · {Object.keys(window.GG_RECIPES || {}).length} recipes</span>
+        </div>
+        <button className="danger-btn" onClick={clearEverything}>
+          Reset all data
+        </button>
+      </div>
+
+      <nav className="tabbar">
+        <a className="tab" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
+        <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
+        <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+        <a className="tab" href="./creations.html"><Icon name="book"/><span className="tab-lbl">Create</span></a>
+        <a className="tab active" href="./profile.html"><Icon name="user"/><span className="tab-lbl">Profile</span></a>
+      </nav>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<ProfileScreen/>);
+
+requestAnimationFrame(() => {
+  const loader = document.getElementById('app-loading');
+  if (loader) {
+    loader.classList.add('fade-out');
+    setTimeout(() => loader.remove(), 400);
+  }
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('[SW] failed:', err));
+    });
+  }
+</script>
+
+</body>
+</html>

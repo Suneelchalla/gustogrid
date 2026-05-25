@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>My Creations — GustoGrid</title>
+<meta name="description" content="Capture your own recipes — name, ingredients, steps. Saved on your device.">
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#FF6B35">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GustoGrid">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="./theme.css">
+
+<style>
+  .c-head {
+    padding: calc(20px + var(--safe-top)) 24px 24px;
+    position: relative;
+  }
+  .c-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .c-eyebrow .dot {
+    width: 6px; height: 6px;
+    background: var(--mint);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--mint);
+  }
+  .c-eyebrow span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .c-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin: 0;
+  }
+  .c-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, #FF6B35, #FFC233);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .c-sub {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  /* Mode toggle */
+  .mode-toggle {
+    margin: 0 24px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .mode-btn {
+    background: transparent;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .mode-btn svg { width: 14px; height: 14px; }
+  .mode-btn .ct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    opacity: 0.7;
+  }
+  .mode-btn.active {
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    color: #1a0d05;
+    box-shadow: 0 4px 12px -4px rgba(255, 107, 53, 0.5);
+  }
+
+  /* Form */
+  .form-wrap {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .field-label .hint {
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-family: 'Geist', sans-serif;
+    color: var(--text-3);
+    font-size: 11px;
+    font-style: italic;
+  }
+  .field-input, .field-textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field-input:focus, .field-textarea:focus {
+    border-color: rgba(255, 107, 53, 0.4);
+    background: var(--surface-2);
+  }
+  .field-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .field-emoji-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .emoji-pick {
+    width: 44px; height: 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .emoji-pick.active {
+    border-color: var(--orange);
+    background: rgba(255, 107, 53, 0.12);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.3);
+  }
+
+  /* Difficulty + time row */
+  .meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .diff-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .diff-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 6px;
+    border-radius: 9px;
+    font-family: 'Geist', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-3);
+    cursor: pointer;
+  }
+  .diff-btn.active.easy { background: rgba(61,220,151,0.15); color: var(--mint); }
+  .diff-btn.active.med { background: rgba(255,194,51,0.15); color: var(--amber); }
+  .diff-btn.active.hard { background: rgba(255,61,90,0.15); color: var(--crimson); }
+
+  /* Save button */
+  .save-btn {
+    margin: 4px 24px 24px;
+    padding: 16px;
+    background: linear-gradient(135deg, #FF6B35, #E8A53D);
+    border: none;
+    border-radius: 16px;
+    color: #1a0d05;
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -8px rgba(255, 107, 53, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .save-btn:active { transform: scale(0.98); }
+  .save-btn:disabled {
+    background: var(--surface-2);
+    color: var(--text-3);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .save-btn svg { width: 16px; height: 16px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(110px + var(--safe-bottom));
+    background: var(--surface-3);
+    border: 1px solid rgba(61, 220, 151, 0.3);
+    border-radius: 14px;
+    padding: 10px 16px;
+    color: var(--mint);
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 200;
+    box-shadow: 0 12px 28px -8px rgba(0,0,0,0.5);
+    animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .toast svg { width: 14px; height: 14px; }
+
+  /* Saved list */
+  .saved-list {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .saved-creation {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .saved-emoji {
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .saved-body { flex: 1; min-width: 0; }
+  .saved-name {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .saved-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    margin: 0 0 8px;
+    line-height: 1.4;
+  }
+  .saved-counts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .saved-count-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .saved-count-pill.diff-Easy { color: var(--mint); border-color: rgba(61,220,151,0.3); }
+  .saved-count-pill.diff-Medium { color: var(--amber); border-color: rgba(255,194,51,0.3); }
+  .saved-count-pill.diff-Hard { color: var(--crimson); border-color: rgba(255,61,90,0.3); }
+  .saved-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+  }
+  .delete-btn {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .delete-btn:active {
+    color: var(--crimson);
+    border-color: rgba(255, 61, 90, 0.3);
+    background: rgba(255, 61, 90, 0.08);
+  }
+  .delete-btn svg { width: 14px; height: 14px; }
+
+  /* Empty state */
+  .empty-state {
+    margin: 0 24px 24px;
+    padding: 36px 20px;
+    background: var(--surface);
+    border: 1px dashed var(--border-2);
+    border-radius: 22px;
+    text-align: center;
+  }
+  .empty-state .em { font-size: 40px; margin-bottom: 12px; opacity: 0.7; }
+  .empty-state h4 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .empty-state p {
+    font-size: 12px;
+    color: var(--text-2);
+    margin: 0;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="app-loading" class="app-loading">
+  <div class="app-loading-mark">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none">
+      <path d="M4 6h11M4 12h7M4 18h11" stroke="#1a0d05" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 4 L22 4 L20 13 L20 20 Q20 21 19 21 Q18 21 18 20 L18 13 Z" fill="#1a0d05"/>
+    </svg>
+  </div>
+  <div class="app-loading-text">GustoGrid</div>
+  <div class="app-loading-sub">Opening your kitchen…</div>
+</div>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+const Icon = ({ name, ...props }) => {
+  const paths = {
+    home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+    fridge: <><path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M5 10h14"/><path d="M15 7v6"/><path d="M9 7v6"/></>,
+    book: <><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></>,
+    bookmark: <><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></>,
+    user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    plus: <><path d="M5 12h14"/><path d="M12 5v14"/></>,
+    save: <><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>,
+    trash: <><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>,
+    list: <><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></>,
+    check: <><polyline points="20 6 9 17 4 12"/></>,
+  };
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      {paths[name]}
+    </svg>
+  );
+};
+
+const EMOJI_OPTIONS = ['🍛', '🍝', '🍜', '🥘', '🍲', '🍳', '🥗', '🍕', '🌮', '🍰', '☕', '🥞'];
+
+const loadCreations = () => {
+  try {
+    const raw = localStorage.getItem('gg-creations');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+};
+const saveCreations = (list) => {
+  try { localStorage.setItem('gg-creations', JSON.stringify(list)); } catch {}
+};
+
+const CreationsScreen = () => {
+  const [mode, setMode] = useState('saved'); // 'saved' | 'new'
+  const [creations, setCreations] = useState(loadCreations);
+
+  // Form state
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
+  const [emoji, setEmoji] = useState('🍛');
+  const [time, setTime] = useState('');
+  const [difficulty, setDifficulty] = useState('Easy');
+  const [ingredients, setIngredients] = useState('');
+  const [steps, setSteps] = useState('');
+  const [toast, setToast] = useState(null);
+
+  // If we landed with mode=new param OR there are no saved items, start in new mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'new' || creations.length === 0) {
+      setMode('new');
+    }
+  }, []);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2400);
+  };
+
+  const resetForm = () => {
+    setName(''); setDesc(''); setEmoji('🍛'); setTime('');
+    setDifficulty('Easy'); setIngredients(''); setSteps('');
+  };
+
+  const onSave = () => {
+    if (!name.trim()) {
+      showToast('Add a name first');
+      return;
+    }
+    const parsedIngs = ingredients.split('\n').map(s => s.trim()).filter(Boolean);
+    const parsedSteps = steps.split('\n').map(s => s.trim()).filter(Boolean);
+    const item = {
+      id: `c-${Date.now()}`,
+      name: name.trim(),
+      desc: desc.trim(),
+      emoji,
+      time: time.trim() || '—',
+      difficulty,
+      ingredients: parsedIngs,
+      steps: parsedSteps,
+      created: new Date().toISOString(),
+    };
+    const next = [item, ...creations];
+    setCreations(next);
+    saveCreations(next);
+    resetForm();
+    setMode('saved');
+    showToast('Recipe saved');
+  };
+
+  const onDelete = (id) => {
+    if (!confirm('Delete this recipe? This cannot be undone.')) return;
+    const next = creations.filter(c => c.id !== id);
+    setCreations(next);
+    saveCreations(next);
+    showToast('Deleted');
+  };
+
+  const isValid = name.trim().length > 0;
+  const formatDate = (iso) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch { return ''; }
+  };
+
+  return (
+    <div className="app-container fade-up">
+      <div className="c-head">
+        <div className="c-eyebrow">
+          <span className="dot"/>
+          <span>Your kitchen, your rules</span>
+        </div>
+        <h1 className="c-title">My <em>creations</em></h1>
+        <p className="c-sub">
+          Capture your own recipes — name, ingredients, steps. Saved on this device.
+        </p>
+      </div>
+
+      <div className="mode-toggle">
+        <button className={`mode-btn ${mode === 'saved' ? 'active' : ''}`} onClick={() => setMode('saved')}>
+          <Icon name="list"/> Saved <span className="ct">{creations.length}</span>
+        </button>
+        <button className={`mode-btn ${mode === 'new' ? 'active' : ''}`} onClick={() => setMode('new')}>
+          <Icon name="plus"/> Add new
+        </button>
+      </div>
+
+      {mode === 'new' ? (
+        <>
+          <div className="form-wrap">
+            <div className="field">
+              <label className="field-label">Recipe name <span className="hint">required</span></label>
+              <input className="field-input" type="text" value={name} onChange={e => setName(e.target.value)}
+                placeholder="My grandma's biryani" maxLength="60"/>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Pick an emoji</label>
+              <div className="field-emoji-row">
+                {EMOJI_OPTIONS.map(em => (
+                  <button key={em} className={`emoji-pick ${emoji === em ? 'active' : ''}`}
+                    onClick={() => setEmoji(em)}>{em}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Short description</label>
+              <input className="field-input" type="text" value={desc} onChange={e => setDesc(e.target.value)}
+                placeholder="Slow-cooked, fragrant, layered" maxLength="80"/>
+            </div>
+
+            <div className="meta-row">
+              <div className="field">
+                <label className="field-label">Time</label>
+                <input className="field-input" type="text" value={time} onChange={e => setTime(e.target.value)}
+                  placeholder="45 min" maxLength="20"/>
+              </div>
+              <div className="field">
+                <label className="field-label">Difficulty</label>
+                <div className="diff-toggle">
+                  {['Easy', 'Medium', 'Hard'].map(d => (
+                    <button key={d}
+                      className={`diff-btn ${difficulty === d ? `active ${d === 'Easy' ? 'easy' : d === 'Medium' ? 'med' : 'hard'}` : ''}`}
+                      onClick={() => setDifficulty(d)}>
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">
+                Ingredients
+                <span className="hint">one per line</span>
+              </label>
+              <textarea className="field-textarea" value={ingredients} onChange={e => setIngredients(e.target.value)}
+                placeholder={`500g basmati rice\n4 chicken thighs\n2 onions, sliced\n…`}/>
+            </div>
+
+            <div className="field">
+              <label className="field-label">
+                Steps
+                <span className="hint">one per line</span>
+              </label>
+              <textarea className="field-textarea" value={steps} onChange={e => setSteps(e.target.value)}
+                placeholder={`Soak rice for 30 min\nMarinate chicken in yogurt + spices\nLayer rice and chicken, dum cook\n…`}/>
+            </div>
+          </div>
+
+          <button className="save-btn" onClick={onSave} disabled={!isValid}>
+            <Icon name="save"/> Save recipe
+          </button>
+        </>
+      ) : (
+        creations.length === 0 ? (
+          <div className="empty-state">
+            <div className="em">✍️</div>
+            <h4>No creations yet</h4>
+            <p>Switch to "Add new" above and capture your first recipe. Everything's saved locally on this device.</p>
+          </div>
+        ) : (
+          <div className="saved-list">
+            {creations.map(c => (
+              <div key={c.id} className="saved-creation">
+                <div className="saved-emoji">{c.emoji || '📝'}</div>
+                <div className="saved-body">
+                  <h4 className="saved-name">{c.name}</h4>
+                  {c.desc && <p className="saved-desc">{c.desc}</p>}
+                  <div className="saved-counts">
+                    <span className={`saved-count-pill diff-${c.difficulty}`}>{c.difficulty}</span>
+                    {c.time && c.time !== '—' && <span className="saved-count-pill">{c.time}</span>}
+                    <span className="saved-count-pill">{(c.ingredients || []).length} ings</span>
+                    <span className="saved-count-pill">{(c.steps || []).length} steps</span>
+                  </div>
+                  <div className="saved-date">Created {formatDate(c.created)}</div>
+                </div>
+                <button className="delete-btn" onClick={() => onDelete(c.id)}>
+                  <Icon name="trash"/>
+                </button>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {toast && (
+        <div className="toast">
+          <Icon name="check"/> {toast}
+        </div>
+      )}
+
+      <nav className="tabbar">
+        <a className="tab" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
+        <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
+        <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+        <a className="tab active" href="./creations.html"><Icon name="book"/><span className="tab-lbl">Create</span></a>
+        <a className="tab" href="./profile.html"><Icon name="user"/><span className="tab-lbl">Profile</span></a>
+      </nav>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<CreationsScreen/>);
+
+requestAnimationFrame(() => {
+  const loader = document.getElementById('app-loading');
+  if (loader) {
+    loader.classList.add('fade-out');
+    setTimeout(() => loader.remove(), 400);
+  }
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.warn('[SW] failed:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
