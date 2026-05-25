@@ -294,11 +294,42 @@ button, .tappable {
   user-select: none;
 }
 
-/* Disable text selection on UI chrome */
-.app-container { user-select: none; -webkit-user-select: none; }
-.app-container p, .app-container input, .app-container textarea {
-  user-select: text;
-  -webkit-user-select: text;
+/* ============================================================
+   SCROLL FIX (v2.1)
+   Previously .app-container had user-select: none on the whole
+   scroll region, which iOS Safari interpreted as a drag target —
+   so one-finger touch did nothing and only two-finger scroll worked.
+   Now we apply user-select: none ONLY to interactive chrome
+   (tabs, buttons, cards, chips). Body text + scrollable areas
+   keep default selection + touch behavior.
+   ============================================================ */
+
+.app-container {
+  /* Explicitly allow vertical scrolling on touch devices */
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable text selection only on actual UI chrome */
+.tabbar, .tab,
+.icon-btn, .hero-btn,
+.cat-card, .creations-card, .fridge-hero,
+.list-card, .grid-card, .featured,
+.sub-chip, .filter-chip, .stub-btn,
+.ing-chip, .ing-row, .step-card,
+.portion-btn, .vt-btn, .sort-trigger, .sort-opt,
+.fridge-banner, .sort-bar,
+.find-cta, .reset-btn,
+.watch-fab, .install-prompt {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Quick tap responsiveness on every interactive element */
+a, button, .tab, .cat-card, .list-card, .grid-card,
+.ing-chip, .ing-row, .step-card, .filter-chip,
+.sub-chip, .portion-btn, .vt-btn, .timer-btn {
+  touch-action: manipulation;
 }
 
 /* Animation utilities */
