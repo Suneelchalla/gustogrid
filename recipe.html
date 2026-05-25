@@ -838,6 +838,8 @@ const TabBar = () => (
     <a className="tab active" href="./index.html"><Icon name="home"/><span className="tab-lbl">Home</span></a>
     <a className="tab" href="./fridge.html"><Icon name="fridge"/><span className="tab-lbl">Fridge</span></a>
     <a className="tab" href="./saved.html"><Icon name="bookmark"/><span className="tab-lbl">Saved</span></a>
+    <a className="tab" href="./creations.html"><Icon name="book"/><span className="tab-lbl">Create</span></a>
+    <a className="tab" href="./profile.html"><Icon name="user"/><span className="tab-lbl">Profile</span></a>
   </nav>
 );
 
@@ -993,7 +995,7 @@ const Hero = ({ recipe, saved, onToggleSave }) => (
     <div className="hero-bg" style={{background: recipe.heroGradient}}/>
     <div className="hero-grain"/>
     <div className="hero-nav">
-      <a className="hero-btn" href="./category.html?cat=non"><Icon name="chevLeft"/></a>
+      <a className="hero-btn" href={`./category.html?cat=${recipe.category || 'non'}`}><Icon name="chevLeft"/></a>
       <div className="hero-btn-group">
         <button className="hero-btn" onClick={onToggleSave} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
           <Icon name={saved ? 'bookmarkFilled' : 'bookmark'} style={saved ? {color: 'var(--amber)'} : {}}/>
@@ -1051,8 +1053,8 @@ const StubScreen = ({ recipe, saved, onToggleSave }) => (
         <a className="stub-btn primary" href={recipe.youtube} target="_blank" rel="noopener noreferrer">
           <Icon name="youtube"/> Watch on YouTube while we finish
         </a>
-        <a className="stub-btn secondary" href="./category.html?cat=non">
-          <Icon name="chevLeft"/> Back to Non-Veg
+        <a className="stub-btn secondary" href={`./category.html?cat=${recipe.category || 'non'}`}>
+          <Icon name="chevLeft"/> Back to browse
         </a>
       </div>
     </div>
