@@ -39,8 +39,6 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Geist', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-  overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -93,22 +91,11 @@ body::before {
   margin: 0 auto;
   background: var(--bg);
   position: relative;
-  isolation: isolate;
   padding-bottom: calc(100px + var(--safe-bottom));
 }
 
 /* On desktop, show subtle frame to suggest mobile-first design */
 @media (min-width: 600px) {
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, transparent 8%, transparent 92%, rgba(0, 0, 0, 0.4) 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
   .app-container {
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.04),
@@ -309,22 +296,14 @@ button, .tappable {
 }
 
 /* ============================================================
-   SCROLL FIX (v2.1)
-   Previously .app-container had user-select: none on the whole
-   scroll region, which iOS Safari interpreted as a drag target —
-   so one-finger touch did nothing and only two-finger scroll worked.
-   Now we apply user-select: none ONLY to interactive chrome
-   (tabs, buttons, cards, chips). Body text + scrollable areas
-   keep default selection + touch behavior.
+   SCROLL FIX (v2.4 — NUCLEAR)
+   Stripped down to bare minimum. No touch-action, no
+   user-select games on the scroll container, no fancy
+   stacking contexts. Just plain default browser scrolling.
    ============================================================ */
 
-.app-container {
-  /* Explicitly allow vertical scrolling on touch devices */
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Disable text selection only on actual UI chrome */
+/* Disable text selection only on actual UI chrome — these are
+   the elements you tap, not the page itself. */
 .tabbar, .tab,
 .icon-btn, .hero-btn,
 .cat-card, .creations-card, .fridge-hero,
@@ -337,13 +316,6 @@ button, .tappable {
 .watch-fab, .install-prompt {
   user-select: none;
   -webkit-user-select: none;
-}
-
-/* Quick tap responsiveness on every interactive element */
-a, button, .tab, .cat-card, .list-card, .grid-card,
-.ing-chip, .ing-row, .step-card, .filter-chip,
-.sub-chip, .portion-btn, .vt-btn, .timer-btn {
-  touch-action: manipulation;
 }
 
 /* Animation utilities */
