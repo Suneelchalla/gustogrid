@@ -990,7 +990,33 @@ const StepCard = ({ step }) => {
 };
 
 // === Hero (shared by full + stub) ===
-const Hero = ({ recipe, saved, onToggleSave }) => (
+const Hero = ({ recipe, saved, onToggleSave }) => {
+  const [shareToast, setShareToast] = useState('');
+
+  const onShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: `${recipe.title} — GustoGrid`,
+      text: `${recipe.title} — ${recipe.sub}`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setShareToast('Link copied');
+        setTimeout(() => setShareToast(''), 1800);
+      } else {
+        setShareToast('Sharing not supported');
+        setTimeout(() => setShareToast(''), 1800);
+      }
+    } catch (err) {
+      // User cancelled or share failed — silent
+    }
+  };
+
+  return (
   <div className="hero">
     <div className="hero-bg" style={{background: recipe.heroGradient}}/>
     <div className="hero-grain"/>
@@ -1000,9 +1026,30 @@ const Hero = ({ recipe, saved, onToggleSave }) => (
         <button className="hero-btn" onClick={onToggleSave} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
           <Icon name={saved ? 'bookmarkFilled' : 'bookmark'} style={saved ? {color: 'var(--amber)'} : {}}/>
         </button>
-        <div className="hero-btn"><Icon name="share"/></div>
+        <button className="hero-btn" onClick={onShare} style={{background: 'rgba(10,10,11,0.55)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer'}}>
+          <Icon name="share"/>
+        </button>
       </div>
     </div>
+    {shareToast && (
+      <div style={{
+        position: 'absolute',
+        top: 'calc(80px + var(--safe-top))',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(10,10,11,0.95)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        color: 'var(--mint)',
+        padding: '8px 16px',
+        borderRadius: '100px',
+        fontSize: '12px',
+        fontWeight: 500,
+        zIndex: 20,
+        border: '1px solid rgba(61,220,151,0.3)',
+        animation: 'fade-up 0.3s ease',
+      }}>{shareToast}</div>
+    )}
     <div className="steam-wisp"><SteamWisp/></div>
     <div className="hero-emoji">{recipe.emoji}</div>
     <div className="hero-text">
@@ -1013,7 +1060,8 @@ const Hero = ({ recipe, saved, onToggleSave }) => (
       <p className="hero-sub">{recipe.sub}</p>
     </div>
   </div>
-);
+  );
+};
 
 // === Stub State ===
 const StubScreen = ({ recipe, saved, onToggleSave }) => (
